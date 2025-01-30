@@ -1,6 +1,7 @@
 import { QMainWindow, QWidget, QLabel, QPushButton, QIcon, QBoxLayout, Direction } from '@nodegui/nodegui';
 import * as path from "node:path";
 import sourceMapSupport from 'source-map-support';
+import { mem } from './mem';
 
 sourceMapSupport.install();
 
@@ -50,5 +51,7 @@ function main(): void {
   win.show();
 
   (global as any).win = win;
+
+  mem();
 }
 main();
