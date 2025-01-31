@@ -1,8 +1,13 @@
 import koffi from 'koffi/indirect';
 
-const lib = koffi.load('kernel32.dll');
+const kernel32 = koffi.load('kernel32.dll');
 
-const TH32CS_SNAPPROCESS = 0x2
+const psapi = koffi.load('psapi.dll');
+
+const TH32CS_SNAPPROCESS = 0x2;
+
+const PROCESS_VM_READ  = 0x0010;
+const PROCESS_QUERY_INFORMATION = 0x0400;
 
 const PROCESSENTRY32 = koffi.struct('PROCESSENTRY32', {
     dwSize: 'uint32',
@@ -17,19 +22,23 @@ const PROCESSENTRY32 = koffi.struct('PROCESSENTRY32', {
     szExeFile: koffi.array('char', 260, 'Array')
 })
 
-const CreateToolhelp32Snapshot = lib.func('__stdcall', 'CreateToolhelp32Snapshot', 'void *', ['uint32', 'void *'])
+const CreateToolhelp32Snapshot = kernel32.func('__stdcall', 'CreateToolhelp32Snapshot', 'void *', ['uint32', 'void *'])
 
-// const Process32First = lib.func('__stdcall', 'Process32First', 'bool', ['void *', PROCESSENTRY32])
-const Process32First = lib.func('bool __stdcall Process32First(_In_ void *hSnapshot, _Inout_ PROCESSENTRY32 *lppe)');
+const Process32First = kernel32.func('bool __stdcall Process32First(_In_ void* hSnapshot, _Inout_ PROCESSENTRY32* lppe)');
 
-// const Process32Next = lib.func('__stdcall', 'Process32Next', 'bool', ['void *', PROCESSENTRY32])
-const Process32Next = lib.func('bool __stdcall Process32Next(_In_ void *hSnapshot, _Inout_ PROCESSENTRY32 *lppe)');
+const Process32Next = kernel32.func('bool __stdcall Process32Next(_In_ void* hSnapshot, _Inout_ PROCESSENTRY32* lppe)');
 
-// int __stdcall GetCursorPos(_Out_ POINT *pos)'
+const OpenProcess = kernel32.func('void* __stdcall OpenProcess(_In_ uint32 dwDesiredAccess, _In_ bool bInheritHandle, _In_ uint32 dwProcessId)');
 
-const GetLastError = lib.func('__stdcall', 'GetLastError', 'uint32', []);
+const EnumProcessModules = psapi.func('bool __stdcall EnumProcessModules(_In_ void* hProcess, _Out_ void** lphModule, _In_ uint32 cb, _Out_ uint32* lpcbNeeded)');
 
-const CloseHandle = lib.func('__stdcall', 'CloseHandle', 'bool', ['void *']);
+const K32EnumProcessModules = kernel32.func('bool __stdcall K32EnumProcessModules(_In_ void* hProcess, _Out_ void** lphModule, _In_ uint32 cb, _Out_ uint32* lpcbNeeded)');
+
+const ReadProcessMemory = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ void* lpBuffer, _In_ ulong nSize, _Out_ ulong* lpNumberOfBytesRead)');
+
+const GetLastError = kernel32.func('__stdcall', 'GetLastError', 'uint32', []);
+
+const CloseHandle = kernel32.func('__stdcall', 'CloseHandle', 'bool', ['void *']);
 
 const checkError = (): number => {
     const error = GetLastError();
@@ -42,9 +51,7 @@ const checkError = (): number => {
 export const mem = (): void => {
     checkError();
 
-    let snapHandle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-
-    console.log(snapHandle);
+    const snapHandle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
     checkError();
 
@@ -63,18 +70,38 @@ export const mem = (): void => {
 
     console.log('SIZE TYPE', koffi.sizeof(PROCESSENTRY32));
 
-    console.log('SIZE OBJ', sizeOf(entry))
-
     Process32First(snapHandle, entry);
     
-    
+    let pid;
+
     do {
         if (exeName(entry.szExeFile) === 'Baldur.exe') {
-            console.log('FOUND');
+            pid = entry.th32ProcessID;
+
+            console.log('PID: ', pid);
+
+            break;
         };
     } while (Process32Next(snapHandle, entry));
-
+    checkError();
+    
     CloseHandle(snapHandle);
+    checkError();
+    
+    if (!pid) {
+        console.log('No PID found.');
+    }
+    
+    const procHandle = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, true, pid);
+    console.log(procHandle);
+    checkError();
+
+    let moduleHandles = new Array(1024).fill(0);
+
+    let cbNeeded = [0];
+
+    EnumProcessModules(procHandle, moduleHandles, 8192, cbNeeded);
+    checkError();
 }
 
 const exeName = (nums: number[]): string => {
@@ -90,15 +117,3 @@ const exeName = (nums: number[]): string => {
 
     return result.join('');
 }
-
-const typeSizes = {
-    "undefined": () => 0,
-    "boolean": () => 4,
-    "number": () => 8,
-    "string": item => 2 * item.length,
-    "object": item => !item ? 0 : Object
-      .keys(item)
-      .reduce((total, key) => sizeOf(key) + sizeOf(item[key]) + total, 0)
-  };
-  
-  const sizeOf = value => typeSizes[typeof value](value);
