@@ -67,23 +67,40 @@ const Module32Next = kernel32.func('bool __stdcall Module32Next(_In_ void* hSnap
 
 const OpenProcess = kernel32.func('void* __stdcall OpenProcess(_In_ uint32 dwDesiredAccess, _In_ bool bInheritHandle, _In_ uint32 dwProcessId)');
 
+const ReadProcessMemory_uint8 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint8* lpBuffer, _In_ ulong nSize, _Out_ uint32* lpNumberOfBytesRead)');
+
+const ReadProcessMemory_uint16 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint16* lpBuffer, _In_ ulong nSize, _Out_ uint32* lpNumberOfBytesRead)');
+
+const ReadProcessMemory_uint32 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint32* lpBuffer, _In_ ulong nSize, _Out_ uint32* lpNumberOfBytesRead)');
+
+const ReadProcessMemory_int32 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint32* lpBuffer, _In_ ulong nSize, _Out_ int32* lpNumberOfBytesRead)');
+
+const ReadProcessMemory_int64 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ int64* lpBuffer, _In_ ulong nSize, _Out_ int32* lpNumberOfBytesRead)');
+
+const ReadProcessMemory_uint64 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint64* lpBuffer, _In_ ulong nSize, _Out_ int32* lpNumberOfBytesRead)');
+
+const ReadProcessMemory_pointer = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint32* lpBuffer, _In_ ulong nSize, _Out_ int32* lpNumberOfBytesRead)');
+
+const GetLastError = kernel32.func('__stdcall', 'GetLastError', 'uint32', []);
+
+const CloseHandle = kernel32.func('__stdcall', 'CloseHandle', 'bool', ['void *']);
+
 const EnumProcessModules = psapi.func('bool __stdcall EnumProcessModules(_In_ void* hProcess, _Out_ void** lphModule, _In_ uint32 cb, _Out_ uint32* lpcbNeeded)');
 
 const GetModuleFileNameExA = psapi.func('uint32 __stdcall GetModuleFileNameExA(_In_ void* hProcess, _In_ void* hModule, _Out_ uint8_t* lpFilename, _In_ uint32 nSize)');
 
 const GetModuleInformation = psapi.func('bool __stdcall GetModuleInformation(_In_ void* hProcess, _In_ void* hModule, _Out_ MODULEINFO* lpmodinfo, _In_ uint32 cb)');
 
-
-const ReadProcessMemory = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ void* lpBuffer, _In_ ulong nSize, _Out_ ulong* lpNumberOfBytesRead)');
-
-const GetLastError = kernel32.func('__stdcall', 'GetLastError', 'uint32', []);
-
-const CloseHandle = kernel32.func('__stdcall', 'CloseHandle', 'bool', ['void *']);
+let lastError = 0;
 
 const checkError = (): number => {
     const error = GetLastError();
 
-    console.error('ERROR: ', error);
+    if (error && error !== lastError) {
+        console.error('***********ERROR: ', error);
+
+        lastError = error;
+    }
 
     return error;
 }
@@ -159,7 +176,97 @@ export const mem = (): void => {
 
     const modBaseAddr = koffi.address(modEntry.modBaseAddr);
 
-    console.log(modBaseAddr + BigInt(0x18));
+    const procHandle = OpenProcess(PROCESS_VM_READ, true, pid);
+    
+    const offset = 0x68D434;
+    
+    let bytesRead = [0];
+
+    let numEntities = [0];
+    
+    ReadProcessMemory_int32(procHandle, modBaseAddr + BigInt(offset), numEntities, 4, bytesRead);
+
+    console.log('num entities: ', numEntities[0]);
+
+    const list = modBaseAddr + BigInt(offset + 0x4 + 0x18);
+
+    let ids = '';
+
+    let padding = '';
+
+    let objectPtrs = [];
+
+    let types = [];
+    
+    let buffer = [0];
+
+    let ptr = '';
+
+    for (let i = 2001 * 16; i <= numEntities[0] * 16; i += 16) {
+
+        ReadProcessMemory_uint16(procHandle, list + BigInt(i), buffer, 2, bytesRead);
+        ids += buffer[0] + ' ';
+
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 2), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 3), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 4), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 5), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 6), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 7), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        padding += '      ';
+
+
+
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 8), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 9), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 10), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 11), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 12), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 13), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 14), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 15), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ptr += '      ';
+
+        ReadProcessMemory_pointer(procHandle, list + BigInt(i + 8), buffer, 4, bytesRead);
+        objectPtrs.push(buffer[0]);
+
+    }
+
+    checkError();
+    
+    for (let i = 0; i < objectPtrs.length; i++) {
+        ReadProcessMemory_uint8(procHandle, BigInt(objectPtrs[i]) + BigInt(0x8), buffer, 1, bytesRead);
+        
+        checkError();
+        if (buffer[0] === 49) {
+            console.log('FOUND')
+        }
+        types.push(buffer[0]);
+    }
+    
+    checkError();
+
+    // console.log(ids);
+    // console.log(padding);
+    // console.log(objectPtrs);
+    console.log(types.join(' '));
+    // console.log(ptr)
+
+    console.log('DONE');
 
     CloseHandle(moduleSnap);
     CloseHandle(procSnap);
