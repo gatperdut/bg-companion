@@ -1,57 +1,60 @@
-import { QMainWindow, QWidget, QLabel, QPushButton, QIcon, QBoxLayout, Direction } from '@nodegui/nodegui';
+import { QMainWindow, QWidget, QLabel, QPushButton, QIcon, QBoxLayout, Direction, WindowType } from '@nodegui/nodegui';
 import * as path from "node:path";
 import sourceMapSupport from 'source-map-support';
 import { mem } from './mem';
+import { GameSprite } from './game-sprite.class';
+import { Tracker } from './tracker.class';
+
+import  * as _ from 'lodash-es'
 
 sourceMapSupport.install();
 
 
-function main(): void {
-  // const win = new QMainWindow();
-  // win.setWindowTitle("Hello World");
+const trackers: Record<number, Tracker> = {};
 
-  // const centralWidget = new QWidget();
-
-  // const rootLayout = new QBoxLayout(Direction.TopToBottom);
-  // centralWidget.setObjectName("myroot");
-  // centralWidget.setLayout(rootLayout);
-
-  // const label = new QLabel();
-  // label.setObjectName("mylabel");
-  // label.setText("Hello");
-
-  // const button = new QPushButton();
-  // button.setIcon(new QIcon(path.join(__dirname, '../assets/logox200.png')));
-
-  // const label2 = new QLabel();
-  // label2.setText("World");
-  // label2.setInlineStyle(`
-  //   color: red;
-  // `);
-
-  // rootLayout.addWidget(label);
-  // rootLayout.addWidget(button);
-  // rootLayout.addWidget(label2);
-  // win.setCentralWidget(centralWidget);
-  // win.setStyleSheet(
-  // `
-  //   #myroot {
-  //     background-color: #009688;
-  //     height: '100%';
-  //     align-items: 'center';
-  //     justify-content: 'center';
-  //   }
-  //   #mylabel {
-  //     font-size: 16px;
-  //     font-weight: bold;
-  //     padding: 1;
-  //   }
-  // `
-  // );
-  
-  // win.show();
-  
-  // (global as any).win = win;
-  mem();
+const main = (): void => {
+  // setInterval(loop, 500);
+  loop();
 }
+
+const loop = (): void => {
+  const gameSprites: GameSprite[] = mem();
+
+  trackersClean(gameSprites);
+
+  trackersUpsert(gameSprites);
+};
+
+const trackersUpsert = (gameSprites: GameSprite[]): void => {
+  _.each(gameSprites, (gameSprite: GameSprite): void => {
+    if (trackers[gameSprite.id]) {
+      trackers[gameSprite.id].gameSprite = gameSprite;
+
+      return;
+    }
+
+    trackers[gameSprite.id] = new Tracker(gameSprite);
+  })
+}
+
+const trackersClean = (gameSprites: GameSprite[]): void => {
+  const gameSpriteIds: number[] = gameSprites.map((gameSprite: GameSprite): number => gameSprite.id);
+
+  const remove: number[] = [];
+
+  _.each(trackers, (tracker: Tracker): void => {
+    if (!gameSpriteIds.includes(tracker.gameSprite.id)) {
+      remove.push(tracker.gameSprite.id);
+    }
+  })
+
+  remove.forEach(
+    (id: number): void => {
+      trackers[id].close();
+
+      delete trackers[id];
+    }
+  )
+}
+
 main();

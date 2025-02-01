@@ -3,6 +3,8 @@ import { memRead_ptr, memRead_string, memRead_uint32, memRead_uint8 } from "./me
 export class GameSprite {
     public loaded: boolean = false;
 
+    public id: number;
+
     public x: number;
 
     public y: number;
@@ -21,6 +23,9 @@ export class GameSprite {
         if (type !== 49) {
             return;
         }
+
+        this.id = memRead_uint32(procHandle, BigInt(basePtr + 0x48));
+        console.log('id ', this.id);
 
         this.x = memRead_uint32(procHandle, BigInt(basePtr + 0xC));
         this.y = memRead_uint32(procHandle, BigInt(basePtr + 0x10));

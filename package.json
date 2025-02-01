@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.61.0",
+    "lodash-es": "4.17.21",
     "koffi": "^2.10.1",
     "source-map-support": "^0.5.21"
   }

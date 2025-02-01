@@ -103,7 +103,7 @@ const checkError = (): number => {
     return error;
 }
 
-export const mem = (): void => {
+export const mem = (): GameSprite[] => {
     const procSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
     let procEntry = {
@@ -199,4 +199,6 @@ export const mem = (): void => {
 
     CloseHandle(moduleSnap);
     CloseHandle(procSnap);
+    
+    return gameSprites;
 }
