@@ -194,7 +194,7 @@ export const mem = (): void => {
 
     let padding = '';
 
-    let objectPtrs = [];
+    let cGameObjectPtrs = [];
 
     let types = [];
     
@@ -242,20 +242,45 @@ export const mem = (): void => {
         ptr += '      ';
 
         ReadProcessMemory_pointer(procHandle, list + BigInt(i + 8), buffer, 4, bytesRead);
-        objectPtrs.push(buffer[0]);
+        cGameObjectPtrs.push(buffer[0]);
 
     }
 
     checkError();
     
-    for (let i = 0; i < objectPtrs.length; i++) {
-        ReadProcessMemory_uint8(procHandle, BigInt(objectPtrs[i]) + BigInt(0x8), buffer, 1, bytesRead);
+    for (let i = 0; i < cGameObjectPtrs.length; i++) {
+        ReadProcessMemory_uint8(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(0x8), buffer, 1, bytesRead);
         
         checkError();
-        if (buffer[0] === 49) {
-            console.log('FOUND')
-        }
         types.push(buffer[0]);
+
+        if (buffer[0] === 49) {
+            console.log('FOUND ')
+
+            for (let j = 0; j < 0x10000; j += 4) {
+                
+                let xp = [0];
+                ReadProcessMemory_uint32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j), xp, 4, bytesRead);
+
+                if (xp[0] === 95000) {
+                    let cha = [0];
+
+                    console.log('FOUND IMOEN')
+                    ReadProcessMemory_uint16(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 6), cha, 2, bytesRead);
+                    console.log('CHA ' + cha);
+
+                    let con = [0];
+
+                    ReadProcessMemory_uint16(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 8), con, 2, bytesRead);
+                    console.log('CON ' + con);
+
+                    let maxhp = [0];
+
+                    ReadProcessMemory_uint16(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x5C), maxhp, 2, bytesRead);
+                    console.log('MAXHP ' + maxhp);
+                }
+            }
+        }
     }
     
     checkError();
