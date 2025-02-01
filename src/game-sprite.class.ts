@@ -1,0 +1,45 @@
+import { memRead_ptr, memRead_string, memRead_uint32, memRead_uint8 } from "./mem-read.service";
+
+export class GameSprite {
+    public loaded: boolean = false;
+
+    public x: number;
+
+    public y: number;
+
+    public name: string;
+
+    public resref: string;
+
+    constructor(procHandle: any, basePtr: number) {
+        this.init(procHandle, basePtr);
+    }
+
+    private init(procHandle: any, basePtr: number): void {
+        let type = memRead_uint8(procHandle, BigInt(basePtr + 0x8));
+        
+        if (type !== 49) {
+            return;
+        }
+
+        this.x = memRead_uint32(procHandle, BigInt(basePtr + 0xC));
+        this.y = memRead_uint32(procHandle, BigInt(basePtr + 0x10));
+        console.log('X: ', this.x, 'Y: ', this.y);
+
+        let ptr = memRead_ptr(procHandle, BigInt(basePtr + 0x3928));
+        this.name = memRead_string(procHandle, BigInt(ptr));
+        console.log('Name: ', this.name);
+
+        this.resref = memRead_string(procHandle, BigInt(basePtr + 0x540)).replaceAll('*', '');
+        console.log('resref: ', this.resref);
+
+        
+        if (this.x < 0 || this.y < 0 || !this.name || !this.resref) {
+            console.log('Invalid cGameobject.');
+
+            return;
+        }
+
+        this.loaded = true;
+    }
+}

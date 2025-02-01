@@ -1,8 +1,5 @@
-
 import koffi from 'koffi/indirect';
 import { GameSprite } from './game-sprite.class';
-import { memRead_ptr, memRead_string, memRead_uint32, memRead_uint8 } from './mem-read.service';
-import { joinName } from './util.service';
 
 const kernel32 = koffi.load('kernel32.dll');
 
@@ -95,16 +92,26 @@ const GetModuleFileNameExA = psapi.func('uint32 __stdcall GetModuleFileNameExA(_
 
 const GetModuleInformation = psapi.func('bool __stdcall GetModuleInformation(_In_ void* hProcess, _In_ void* hModule, _Out_ MODULEINFO* lpmodinfo, _In_ uint32 cb)');
 
+let lastError = 0;
+
 const checkError = (): number => {
     const error = GetLastError();
 
-    console.error('*******ERROR: ', error);
+    if (error && error !== lastError) {
+        console.error('***********ERROR: ', error);
+
+        lastError = error;
+    }
 
     return error;
 }
 
 export const mem = (): void => {
+    checkError();
+
     const procSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+    checkError();
 
     let procEntry = {
         dwSize: koffi.sizeof(PROCESSENTRY32),
@@ -126,7 +133,7 @@ export const mem = (): void => {
     let pid;
 
     do {
-        if (joinName(procEntry.szExeFile) === 'Baldur.exe') {
+        if (exeName(procEntry.szExeFile) === 'Baldur.exe') {
             pid = procEntry.th32ProcessID;
 
             console.log('PID: ', pid);
@@ -134,6 +141,9 @@ export const mem = (): void => {
             break;
         };
     } while (Process32Next(procSnap, procEntry));
+    checkError();
+    
+    checkError();
     
     if (!pid) {
         console.log('No PID found.');
@@ -157,9 +167,10 @@ export const mem = (): void => {
     console.log('MODENTRYSIZE', koffi.sizeof(MODULEENTRY32));
     
     Module32First(moduleSnap, modEntry);
+    checkError();
     
     do {
-        if (joinName(modEntry.szModule) === 'Baldur.exe') {
+        if (exeName(modEntry.szModule) === 'Baldur.exe') {
             break;
         }
     } while (Module32Next(procSnap, modEntry));
@@ -179,24 +190,148 @@ export const mem = (): void => {
     console.log('num entities: ', numEntities[0]);
 
     const list = modBaseAddr + BigInt(offset + 0x4 + 0x18);
-    
-    let cGameObjectPtrs: number[] = [];
 
+    let ids = '';
+
+    let padding = '';
+
+    let cGameObjectPtrs = [];
+
+    let types = [];
+    
     let buffer = [0];
+
+    let ptr = '';
+
     for (let i = 2001 * 16; i <= numEntities[0] * 16; i += 16) {
+
+        ReadProcessMemory_uint16(procHandle, list + BigInt(i), buffer, 2, bytesRead);
+        ids += buffer[0] + ' ';
+
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 2), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 3), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 4), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 5), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 6), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 7), buffer, 1, bytesRead);
+        padding += buffer[0] + ' '; 
+        padding += '      ';
+
+
+
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 8), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 9), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 10), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 11), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 12), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 13), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 14), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ReadProcessMemory_uint8(procHandle, list + BigInt(i + 15), buffer, 1, bytesRead);
+        ptr += buffer[0] + ' '; 
+        ptr += '      ';
+
         ReadProcessMemory_pointer(procHandle, list + BigInt(i + 8), buffer, 4, bytesRead);
         cGameObjectPtrs.push(buffer[0]);
+
     }
 
+    checkError();
+    
     const gameSprites: GameSprite[] = []
 
     for (let i = 0; i < cGameObjectPtrs.length; i++) {
-        const gameSprite: GameSprite = new GameSprite(procHandle, cGameObjectPtrs[i]);
-        if (gameSprite.loaded) {
-            gameSprites.push(gameSprite);
+        ReadProcessMemory_uint8(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(0x8), buffer, 1, bytesRead);
+        
+        checkError();
+        types.push(buffer[0]);
+
+        if (buffer[0] === 49) {
+            gameSprites.push(new GameSprite(procHandle, cGameObjectPtrs[i] + 4480 - 0x1DC8));
+
+            for (let j = 0; j < 0x10000; j += 4) {
+                
+                let xp = [0];
+                ReadProcessMemory_uint32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j), xp, 4, bytesRead);
+
+                if (xp[0] === 95000) {
+                    console.log('J ', j);
+                    let cha = [0];
+
+                    console.log('FOUND IMOEN')
+                    ReadProcessMemory_uint16(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 6), cha, 2, bytesRead);
+                    console.log('CHA ' + cha);
+
+                    let con = [0];
+
+                    ReadProcessMemory_uint16(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 8), con, 2, bytesRead);
+                    console.log('CON ' + con);
+
+                    let maxhp = [0];
+
+                    ReadProcessMemory_uint16(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x5C), maxhp, 2, bytesRead);
+                    console.log('MAXHP ' + maxhp);
+
+                    const pos = {
+                        x: [0],
+                        y: [0]
+                    }
+
+                    ReadProcessMemory_int32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x60 - 0x1120 + 0x4714 + 0x0), pos.x, 4, bytesRead);
+                    ReadProcessMemory_int32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x60 - 0x1120 + 0x4714 + 0x4), pos.y, 4, bytesRead);
+                    console.log('POS exact', pos)
+
+                    ReadProcessMemory_int32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x60 - 0x1120 + 0x471C + 0x0), pos.x, 4, bytesRead);
+                    ReadProcessMemory_int32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x60 - 0x1120 + 0x471C + 0x4), pos.y, 4, bytesRead);
+                    console.log('POS delta', pos)
+
+                    ReadProcessMemory_int32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x60 - 0x1120 + 0x4724 + 0x0), pos.x, 4, bytesRead);
+                    ReadProcessMemory_int32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x60 - 0x1120 + 0x4724 + 0x4), pos.y, 4, bytesRead);
+                    console.log('POS dest', pos)
+
+                    ReadProcessMemory_int32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x60 - 0x1120 + 0x472C + 0x0), pos.x, 4, bytesRead);
+                    ReadProcessMemory_int32(procHandle, BigInt(cGameObjectPtrs[i]) + BigInt(j - 0x60 - 0x1120 + 0x472C + 0x4), pos.y, 4, bytesRead);
+                    console.log('POS old', pos)
+                }
+            }
         }
     }
+    
+    checkError();
+
+    // console.log(ids);
+    // console.log(padding);
+    // console.log(objectPtrs);
+    console.log(types.join(' '));
+    // console.log(ptr)
+
+    console.log('DONE');
 
     CloseHandle(moduleSnap);
     CloseHandle(procSnap);
+}
+
+const exeName = (nums: number[]): string => {
+    let result: string[] = [];
+
+    let i = 0;
+
+    while (i < nums.length && nums[i]) {
+        result.push(String.fromCharCode(nums[i]));
+
+        i++;
+    }
+
+    return result.join('');
 }
