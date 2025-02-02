@@ -3,10 +3,12 @@ import koffi from 'koffi/indirect';
 import { GameSprite } from './game-sprite.class';
 import { memRead_ptr, memRead_string, memRead_uint32, memRead_uint8 } from './mem-read.service';
 import { joinName } from './util.service';
+import { kernel32, psapi } from './libs';
 
-const kernel32 = koffi.load('kernel32.dll');
-
-const psapi = koffi.load('psapi.dll');
+export type MemResult = {
+    pid: number;
+    gameSprites: GameSprite[];
+}
 
 const TH32CS_SNAPPROCESS = 0x2;
 const TH32CS_SNAPMODULE = 0x8;
@@ -85,7 +87,7 @@ const ReadProcessMemory_uint64 = kernel32.func('bool __stdcall ReadProcessMemory
 
 const ReadProcessMemory_pointer = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint32* lpBuffer, _In_ ulong nSize, _Out_ int32* lpNumberOfBytesRead)');
 
-const GetLastError = kernel32.func('__stdcall', 'GetLastError', 'uint32', []);
+
 
 const CloseHandle = kernel32.func('__stdcall', 'CloseHandle', 'bool', ['void *']);
 
@@ -95,15 +97,14 @@ const GetModuleFileNameExA = psapi.func('uint32 __stdcall GetModuleFileNameExA(_
 
 const GetModuleInformation = psapi.func('bool __stdcall GetModuleInformation(_In_ void* hProcess, _In_ void* hModule, _Out_ MODULEINFO* lpmodinfo, _In_ uint32 cb)');
 
-const checkError = (): number => {
-    const error = GetLastError();
 
-    console.error('*******ERROR: ', error);
 
-    return error;
-}
+export const mem = (): MemResult => {
+    const memResult: MemResult = {
+        pid: null,
+        gameSprites: []
+    };
 
-export const mem = (): GameSprite[] => {
     const procSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
     let procEntry = {
@@ -123,19 +124,17 @@ export const mem = (): GameSprite[] => {
 
     Process32First(procSnap, procEntry);
     
-    let pid;
-
     do {
         if (joinName(procEntry.szExeFile) === 'Baldur.exe') {
-            pid = procEntry.th32ProcessID;
+            memResult.pid = procEntry.th32ProcessID;
 
-            console.log('PID: ', pid);
+            console.log('PID: ', memResult.pid);
 
             break;
         };
     } while (Process32Next(procSnap, procEntry));
     
-    if (!pid) {
+    if (!memResult.pid) {
         console.log('No PID found.');
     }
     
@@ -152,7 +151,7 @@ export const mem = (): GameSprite[] => {
         szExePath: new Array(260).fill(0),
     }
     
-    const moduleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid);
+    const moduleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, memResult.pid);
     
     console.log('MODENTRYSIZE', koffi.sizeof(MODULEENTRY32));
     
@@ -166,7 +165,7 @@ export const mem = (): GameSprite[] => {
 
     const modBaseAddr = koffi.address(modEntry.modBaseAddr);
 
-    const procHandle = OpenProcess(PROCESS_VM_READ, true, pid);
+    const procHandle = OpenProcess(PROCESS_VM_READ, true, memResult.pid);
     
     const offset = 0x68D434;
     
@@ -188,17 +187,15 @@ export const mem = (): GameSprite[] => {
         cGameObjectPtrs.push(buffer[0]);
     }
 
-    const gameSprites: GameSprite[] = []
-
     for (let i = 0; i < cGameObjectPtrs.length; i++) {
         const gameSprite: GameSprite = new GameSprite(procHandle, cGameObjectPtrs[i]);
         if (gameSprite.loaded) {
-            gameSprites.push(gameSprite);
+            memResult.gameSprites.push(gameSprite);
         }
     }
 
     CloseHandle(moduleSnap);
     CloseHandle(procSnap);
     
-    return gameSprites;
+    return memResult;
 }

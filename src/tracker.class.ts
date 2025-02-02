@@ -1,11 +1,15 @@
-import { Direction, QBoxLayout, QIcon, QMainWindow, QPushButton, QWidget, WindowType } from "@nodegui/nodegui";
+import { Direction, QBoxLayout, QIcon, QMainWindow, QPushButton, QWidget, SizeConstraint, WindowType } from "@nodegui/nodegui";
 import { GameSprite } from "./game-sprite.class";
 import * as path from "node:path";
 
 export class Tracker {
     private window: QMainWindow;
 
-    constructor(public gameSprite: GameSprite) {
+    constructor(public gameSprite: GameSprite, private rect) {
+        if (gameSprite.name !== 'Xan fan') {
+            return;
+        }
+
         this.init();
     }
 
@@ -13,8 +17,11 @@ export class Tracker {
         this.window = new QMainWindow();
 
         this.window.setWindowFlag(WindowType.FramelessWindowHint, true);
+        this.window.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
+        this.window.setInlineStyle('max-width: 10px; max-height: 10px; background-color: red;')
 
         const centralWidget = new QWidget();
+        centralWidget.setInlineStyle('max-width: 10px; max-height: 10px;')
 
         const rootLayout = new QBoxLayout(Direction.TopToBottom);
 
@@ -22,23 +29,25 @@ export class Tracker {
         centralWidget.setLayout(rootLayout);
 
         const button = new QPushButton();
-        button.setIcon(new QIcon(path.join(__dirname, '../assets/logox200.png')));
+        button.setInlineStyle('max-width: 10px; max-height: 10px;');
         button.addEventListener('clicked', () => {
             console.log('the button was clicked');
         })
 
         rootLayout.addWidget(button);
         this.window.setCentralWidget(centralWidget);
-        this.window.setStyleSheet(
-        `
-            #myroot {
-                background-color: #009688;
-                height: '100%';
-                align-items: 'center';
-                justify-content: 'center';
-            }
-        `
-        );
+        this.window.move(this.rect.left, this.rect.top)
+        // this.window.setStyleSheet(
+        // `
+        //     #myroot {
+        //         max-height: 20px;
+        //         max-width: 20px;
+        //         background-color: #009688;
+        //     }
+        // `
+        // );
+
+        this.window.show();
     }
 
     public close(): void {

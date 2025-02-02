@@ -1,11 +1,12 @@
 import { QMainWindow, QWidget, QLabel, QPushButton, QIcon, QBoxLayout, Direction, WindowType } from '@nodegui/nodegui';
 import * as path from "node:path";
 import sourceMapSupport from 'source-map-support';
-import { mem } from './mem';
+import { mem, MemResult } from './mem';
 import { GameSprite } from './game-sprite.class';
 import { Tracker } from './tracker.class';
 
 import  * as _ from 'lodash-es'
+import { win } from './window.service';
 
 sourceMapSupport.install();
 
@@ -18,14 +19,17 @@ const main = (): void => {
 }
 
 const loop = (): void => {
-  const gameSprites: GameSprite[] = mem();
+  const memResult: MemResult = mem();
 
-  trackersClean(gameSprites);
+  const rect = win(memResult.pid);
 
-  trackersUpsert(gameSprites);
+
+  trackersClean(memResult.gameSprites);
+
+  trackersUpsert(memResult.gameSprites, rect);
 };
 
-const trackersUpsert = (gameSprites: GameSprite[]): void => {
+const trackersUpsert = (gameSprites: GameSprite[], rect): void => {
   _.each(gameSprites, (gameSprite: GameSprite): void => {
     if (trackers[gameSprite.id]) {
       trackers[gameSprite.id].gameSprite = gameSprite;
@@ -33,7 +37,7 @@ const trackersUpsert = (gameSprites: GameSprite[]): void => {
       return;
     }
 
-    trackers[gameSprite.id] = new Tracker(gameSprite);
+    trackers[gameSprite.id] = new Tracker(gameSprite, rect);
   })
 }
 

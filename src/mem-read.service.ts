@@ -1,7 +1,7 @@
 import koffi from 'koffi/indirect';
 import { joinName } from './util.service';
+import { kernel32 } from './libs';
 
-const kernel32 = koffi.load('kernel32.dll');
 
 const ReadProcessMemory_uint8 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint8* lpBuffer, _In_ ulong nSize, _Out_ uint32* lpNumberOfBytesRead)');
 
@@ -34,19 +34,29 @@ export const memRead_string = (procHandle, ptr: bigint): string => {
 }
 
 export const memRead_int16 = (procHandle, ptr: bigint): number => {
-    const bytesRead: number[] = [0];
+    const bytesRead: number[] = [null];
 
-    const value: number[] = [0];
+    const value: number[] = [null];
 
     ReadProcessMemory_uint16(procHandle, ptr, value, 2, bytesRead);
 
     return value[0];
 }
 
-export const memRead_uint32 = (procHandle, ptr: bigint): number => {
-    const bytesRead: number[] = [0];
+export const memRead_int32 = (procHandle, ptr: bigint): number => {
+    const bytesRead: number[] = [null];
 
-    const value: number[] = [0];
+    const value: number[] = [null];
+
+    ReadProcessMemory_int32(procHandle, ptr, value, 4, bytesRead);
+
+    return value[0];
+}
+
+export const memRead_uint32 = (procHandle, ptr: bigint): number => {
+    const bytesRead: number[] = [null];
+
+    const value: number[] = [null];
 
     ReadProcessMemory_uint32(procHandle, ptr, value, 4, bytesRead);
 
@@ -54,9 +64,9 @@ export const memRead_uint32 = (procHandle, ptr: bigint): number => {
 }
 
 export const memRead_ptr = (procHandle, ptr: bigint) => {
-    const bytesRead: number[] = [0];
+    const bytesRead: number[] = [null];
 
-    const value: number[] = [0];
+    const value: number[] = [null];
 
     ReadProcessMemory_ptr(procHandle, ptr, value, 4, bytesRead);
 
@@ -64,9 +74,9 @@ export const memRead_ptr = (procHandle, ptr: bigint) => {
 }
 
 export const memRead_uint8 = (procHandle, ptr: bigint) => {
-    const bytesRead: number[] = [0];
+    const bytesRead: number[] = [null];
 
-    const value: number[] = [0];
+    const value: number[] = [null];
 
     ReadProcessMemory_uint8(procHandle, ptr, value, 1, bytesRead);
 
