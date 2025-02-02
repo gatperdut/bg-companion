@@ -14,8 +14,7 @@ sourceMapSupport.install();
 const trackers: Record<number, Tracker> = {};
 
 const main = (): void => {
-  // setInterval(loop, 500);
-  loop();
+  setInterval(loop, 500);
 }
 
 const loop = (): void => {
@@ -33,6 +32,8 @@ const trackersUpsert = (gameSprites: GameSprite[], rect): void => {
   _.each(gameSprites, (gameSprite: GameSprite): void => {
     if (trackers[gameSprite.id]) {
       trackers[gameSprite.id].gameSprite = gameSprite;
+
+      trackers[gameSprite.id].track();
 
       return;
     }

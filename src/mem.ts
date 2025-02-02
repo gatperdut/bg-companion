@@ -120,15 +120,11 @@ export const mem = (): MemResult => {
         szExeFile: new Array(260).fill(0)
     };
 
-    console.log('PROCENTRYSIZE', koffi.sizeof(PROCESSENTRY32));
-
     Process32First(procSnap, procEntry);
     
     do {
         if (joinName(procEntry.szExeFile) === 'Baldur.exe') {
             memResult.pid = procEntry.th32ProcessID;
-
-            console.log('PID: ', memResult.pid);
 
             break;
         };
@@ -153,8 +149,6 @@ export const mem = (): MemResult => {
     
     const moduleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, memResult.pid);
     
-    console.log('MODENTRYSIZE', koffi.sizeof(MODULEENTRY32));
-    
     Module32First(moduleSnap, modEntry);
     
     do {
@@ -174,8 +168,6 @@ export const mem = (): MemResult => {
     let numEntities = [0];
     
     ReadProcessMemory_int32(procHandle, modBaseAddr + BigInt(offset), numEntities, 4, bytesRead);
-
-    console.log('num entities: ', numEntities[0]);
 
     const list = modBaseAddr + BigInt(offset + 0x4 + 0x18);
     
