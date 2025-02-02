@@ -9,7 +9,7 @@ const ReadProcessMemory_uint16 = kernel32.func('bool __stdcall ReadProcessMemory
 
 const ReadProcessMemory_uint32 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint32* lpBuffer, _In_ ulong nSize, _Out_ uint32* lpNumberOfBytesRead)');
 
-const ReadProcessMemory_int32 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint32* lpBuffer, _In_ ulong nSize, _Out_ int32* lpNumberOfBytesRead)');
+const ReadProcessMemory_int32 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ int32* lpBuffer, _In_ ulong nSize, _Out_ int32* lpNumberOfBytesRead)');
 
 const ReadProcessMemory_int64 = kernel32.func('bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ int64* lpBuffer, _In_ ulong nSize, _Out_ int32* lpNumberOfBytesRead)');
 

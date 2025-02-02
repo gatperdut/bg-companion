@@ -72,11 +72,11 @@ export class GameSprite {
         console.log('viewport: ', this.viewportX, this.viewportY)
         this.scrollX = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0xC0))
         if (this.scrollX > 10000) {
-            this.scrollX = 0;
+            // this.scrollX = 0;
         }
         this.scrollY = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0xC0 + 0x4))
         if (this.scrollY > 10000) {
-            this.scrollY = 0;
+            // this.scrollY = 0;
         }
         console.log('scroll: ', this.scrollX, this.scrollY);        
         this.relativeX = this.x - this.scrollX;

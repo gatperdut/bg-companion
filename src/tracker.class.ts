@@ -25,6 +25,7 @@ export class Tracker {
         this.window.setWindowFlag(WindowType.FramelessWindowHint, true);
         this.window.setWindowFlag(WindowType.NoDropShadowWindowHint, true);
         this.window.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
+        this.window.setWindowFlag(WindowType.Tool, true);
         this.window.setInlineStyle('max-width: 10px; max-height: 10px; background: transparent;')
 
         const centralWidget = new QWidget();
@@ -67,10 +68,11 @@ export class Tracker {
 
             return;
         }
+        const rectWidth = this.rect.right - this.rect.left;
+        const rectHeight = this.rect.bottom - this.rect.top;
 
-        const left = Math.round(this.rect.left + (this.gameSprite.relativeX / this.gameSprite.viewportX) * (this.rect.right - this.rect.left));
-
-        const top = Math.round(this.rect.top + (this.gameSprite.relativeY / this.gameSprite.viewportY) * (this.rect.bottom - this.rect.top));
+        const left = Math.round(this.rect.left + (this.gameSprite.relativeX / this.gameSprite.viewportX) * (rectWidth));
+        const top = Math.round(this.rect.top + (this.gameSprite.relativeY / this.gameSprite.viewportY) * (rectHeight));
 
         if (this.window.isHidden()) {
             this.window.show();
