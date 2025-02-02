@@ -50,8 +50,6 @@ export class Tracker {
         this.window.setCentralWidget(centralWidget);
 
         this.track();
-        
-        this.window.show();
     }
 
     public track(): void {
@@ -59,9 +57,24 @@ export class Tracker {
             return;
         }
 
+        if (
+            this.gameSprite.relativeX < 0 || this.gameSprite.relativeX > this.gameSprite.viewportX ||
+            this.gameSprite.relativeY < 0 || this.gameSprite.relativeY > this.gameSprite.viewportY
+        ) {
+            if (!this.window.isHidden()) {
+                this.window.hide();
+            }
+
+            return;
+        }
+
         const left = this.rect.left + (this.gameSprite.relativeX / this.gameSprite.viewportX) * (this.rect.right - this.rect.left);
 
         const top = this.rect.top + (this.gameSprite.relativeY / this.gameSprite.viewportY) * (this.rect.bottom - this.rect.top);
+
+        if (this.window.isHidden()) {
+            this.window.show();
+        }
 
         this.window.move(left, top)
     }

@@ -59,6 +59,10 @@ export class GameSprite {
 
         let ptr = memRead_ptr(this.procHandle, BigInt(this.basePtr + 0x3928));
         this.name = memRead_string(this.procHandle, BigInt(ptr));
+
+        if (this.name !== 'Xan fan') {
+            return;
+        }
         // console.log('Name: ', this.name);
 
         this.resref = memRead_string(this.procHandle, BigInt(this.basePtr + 0x540)).replaceAll('*', '');

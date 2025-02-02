@@ -1,6 +1,6 @@
 import koffi from 'koffi/indirect';
 import { checkError } from './error.service';
-import { user32 } from './libs';
+import { dwmapi, user32 } from './libs';
 
 const GetWindowThreadProcessId = user32.func('long __stdcall GetWindowThreadProcessId(_In_ void* hwnd, _Inout_ long* lpdwProcessId)')
 
@@ -35,6 +35,8 @@ const RECT = koffi.struct('RECT', {
 
 const GetWindowRect = user32.func('bool __stdcall GetWindowRect(_In_ void* hwnd, _Out_ RECT* lpRect)');
 
+const DwmGetWindowAttribute = dwmapi.func('long __stdcall DwmGetWindowAttribute(_In_ void* hwnd, _In_ long dwAttribute, _Out_ RECT* pvAttribute, _In_ long cbAttribute)');
+
 // Hook for EVENT_OBJECT_FOCUS
 
 export const win = (pid: number) => {
@@ -47,8 +49,11 @@ export const win = (pid: number) => {
         bottom: 0
     };
 
-    GetWindowRect(windowHandle, rect);
+    // GetWindowRect(windowHandle, rect);
+    // console.log(rect);
 
+    DwmGetWindowAttribute(windowHandle, 9, rect, koffi.sizeof(RECT))
     console.log(rect);
+
     return rect;
 }
