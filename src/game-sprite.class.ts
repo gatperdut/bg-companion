@@ -41,8 +41,6 @@ export class GameSprite {
 
 
         if (this.x < 0 || this.y < 0 || !this.name || !this.resref) {
-            console.log('Invalid cGameobject.');
-
             return;
         }
 
@@ -71,12 +69,18 @@ export class GameSprite {
         const gameAreaPtr = memRead_ptr(this.procHandle, BigInt(this.basePtr + 0x18));
         this.viewportX = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0x78 + 0x8))
         this.viewportY = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0x78 + 0x8 + 0x4))
-        // console.log('viewport: ', viewportX, viewportY)
+        console.log('viewport: ', this.viewportX, this.viewportY)
         this.scrollX = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0xC0))
+        if (this.scrollX > 10000) {
+            this.scrollX = 0;
+        }
         this.scrollY = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0xC0 + 0x4))
-        // console.log('scroll: ', this.scrollX, this.scrollY);        
+        if (this.scrollY > 10000) {
+            this.scrollY = 0;
+        }
+        console.log('scroll: ', this.scrollX, this.scrollY);        
         this.relativeX = this.x - this.scrollX;
         this.relativeY = this.y - this.scrollY;
-        // console.log('relative', relativeX, relativeY);
+        console.log('relative', this.relativeX, this.relativeY);
     }
 }

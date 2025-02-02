@@ -37,23 +37,41 @@ const GetWindowRect = user32.func('bool __stdcall GetWindowRect(_In_ void* hwnd,
 
 const DwmGetWindowAttribute = dwmapi.func('long __stdcall DwmGetWindowAttribute(_In_ void* hwnd, _In_ long dwAttribute, _Out_ RECT* pvAttribute, _In_ long cbAttribute)');
 
+const GetSystemMetrics = user32.func('int __stdcall GetSystemMetrics(_In_ int nIndex)');
+
 // Hook for EVENT_OBJECT_FOCUS
 
-export const win = (pid: number) => {
+export type WinResult = {
+    rect;
+    screen;
+}
+
+export const win = (pid: number): WinResult => {
+    const result: WinResult = {
+        rect: {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0
+        },
+        screen: {
+            width: 0,
+            height: 0
+        }
+    }
+
     EnumWindows(callback, pid);
     
-    let rect = {
-        left: 0,
-        top: 0,
-        right: 0,
-        bottom: 0
-    };
-
     // GetWindowRect(windowHandle, rect);
     // console.log(rect);
 
-    DwmGetWindowAttribute(windowHandle, 9, rect, koffi.sizeof(RECT))
-    console.log(rect);
+    DwmGetWindowAttribute(windowHandle, 9, result.rect, koffi.sizeof(RECT))
 
-    return rect;
+    result.screen.width = GetSystemMetrics(16)
+
+    result.screen.height = GetSystemMetrics(17)
+
+    console.log(result);
+
+    return result;
 }

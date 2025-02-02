@@ -11,7 +11,7 @@ export class Tracker {
         console.log('the button was clicked');
     };
 
-    constructor(public gameSprite: GameSprite, private rect) {
+    constructor(public gameSprite: GameSprite, public rect, private screen) {
         if (gameSprite.name !== 'Xan fan') {
             return;
         }
@@ -68,9 +68,9 @@ export class Tracker {
             return;
         }
 
-        const left = this.rect.left + (this.gameSprite.relativeX / this.gameSprite.viewportX) * (this.rect.right - this.rect.left);
+        const left = Math.round(this.rect.left + (this.gameSprite.relativeX / this.gameSprite.viewportX) * (this.rect.right - this.rect.left));
 
-        const top = this.rect.top + (this.gameSprite.relativeY / this.gameSprite.viewportY) * (this.rect.bottom - this.rect.top);
+        const top = Math.round(this.rect.top + (this.gameSprite.relativeY / this.gameSprite.viewportY) * (this.rect.bottom - this.rect.top));
 
         if (this.window.isHidden()) {
             this.window.show();

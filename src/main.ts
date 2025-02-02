@@ -20,25 +20,28 @@ const main = (): void => {
 const loop = (): void => {
   const memResult: MemResult = mem();
 
-  const rect = win(memResult.pid);
+  const winResult = win(memResult.pid);
+  
+  const rect = winResult.rect;
 
+  const screen = winResult.screen;
 
   trackersClean(memResult.gameSprites);
 
-  trackersUpsert(memResult.gameSprites, rect);
+  trackersUpsert(memResult.gameSprites, rect, screen);
 };
 
-const trackersUpsert = (gameSprites: GameSprite[], rect): void => {
+const trackersUpsert = (gameSprites: GameSprite[], rect, screen): void => {
   _.each(gameSprites, (gameSprite: GameSprite): void => {
     if (trackers[gameSprite.id]) {
       trackers[gameSprite.id].gameSprite = gameSprite;
-
-      trackers[gameSprite.id].track();
-
-      return;
+      trackers[gameSprite.id].rect = rect;
     }
-
-    trackers[gameSprite.id] = new Tracker(gameSprite, rect);
+    else {
+      trackers[gameSprite.id] = new Tracker(gameSprite, rect, screen);
+    }
+    
+    trackers[gameSprite.id].track();
   })
 }
 
