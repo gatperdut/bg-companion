@@ -1,9 +1,18 @@
-import { memRead_int32, memRead_ptr, memRead_string, memRead_uint32, memRead_uint8 } from "./mem-read.service";
+import { memRead_int16, memRead_int32, memRead_ptr, memRead_string, memRead_uint32, memRead_uint8 } from "./mem-read.service";
+import * as _ from 'lodash-es'
 
 export class GameSprite {
     public loaded: boolean = false;
 
+    public type: number;
+
+    public canBeSeen: number;
+
     public id: number;
+
+    private gameAreaPtr: number;
+
+    public hp: number;
 
     public viewportX: number;
 
@@ -30,21 +39,23 @@ export class GameSprite {
     }
 
     private init(): void {
-        let type = memRead_uint8(this.procHandle, BigInt(this.basePtr + 0x8));
-        
-        if (type !== 49) {
-            return;
-        }
+        this.type = memRead_uint8(this.procHandle, BigInt(this.basePtr + 0x8));
+
+        this.gameAreaPtr = memRead_ptr(this.procHandle, BigInt(this.basePtr + 0x18));
+
+        this.hp = memRead_int16(this.procHandle, BigInt(this.basePtr + 0x560 + 0x1C));
+
+        this.canBeSeen = memRead_int16(this.procHandle, BigInt(this.basePtr + 0x4C));
+        this.resref = memRead_string(this.procHandle, BigInt(this.basePtr + 0x540)).replaceAll('*', '');
 
         this.basic();
+        
+        this.loaded = !this.invalid;
+    }
 
 
-
-        if (this.x < 0 || this.y < 0 || !this.name || !this.resref) {
-            return;
-        }
-
-        this.loaded = true;
+    private get invalid(): boolean {
+        return this.type !== 0x31 || !this.hp || !this.gameAreaPtr || this.x < 0 || this.y < 0 || !this.name || !this.resref || !this.canBeSeen
     }
 
     private basic(): void {
@@ -58,29 +69,16 @@ export class GameSprite {
         let ptr = memRead_ptr(this.procHandle, BigInt(this.basePtr + 0x3928));
         this.name = memRead_string(this.procHandle, BigInt(ptr));
 
-        if (this.name !== 'Xan fan') {
-            return;
-        }
-        // console.log('Name: ', this.name);
-
-        this.resref = memRead_string(this.procHandle, BigInt(this.basePtr + 0x540)).replaceAll('*', '');
-        // console.log('resref: ', this.resref);
-
-        const gameAreaPtr = memRead_ptr(this.procHandle, BigInt(this.basePtr + 0x18));
-        this.viewportX = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0x78 + 0x8))
-        this.viewportY = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0x78 + 0x8 + 0x4))
-        console.log('viewport: ', this.viewportX, this.viewportY)
-        this.scrollX = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0xC0))
-        if (this.scrollX > 10000) {
-            // this.scrollX = 0;
-        }
-        this.scrollY = memRead_int32(this.procHandle, BigInt(gameAreaPtr + 0x5C8 + 0xC0 + 0x4))
-        if (this.scrollY > 10000) {
-            // this.scrollY = 0;
-        }
-        console.log('scroll: ', this.scrollX, this.scrollY);        
+        
+        
+        this.viewportX = memRead_int32(this.procHandle, BigInt(this.gameAreaPtr + 0x5C8 + 0x78 + 0x8))
+        this.viewportY = memRead_int32(this.procHandle, BigInt(this.gameAreaPtr + 0x5C8 + 0x78 + 0x8 + 0x4))
+        // console.log('viewport: ', this.viewportX, this.viewportY)
+        this.scrollX = memRead_int32(this.procHandle, BigInt(this.gameAreaPtr + 0x5C8 + 0xC0))
+        this.scrollY = memRead_int32(this.procHandle, BigInt(this.gameAreaPtr + 0x5C8 + 0xC0 + 0x4))
+        // console.log('scroll: ', this.scrollX, this.scrollY);        
         this.relativeX = this.x - this.scrollX;
         this.relativeY = this.y - this.scrollY;
-        console.log('relative', this.relativeX, this.relativeY);
+        // console.log('relative', this.relativeX, this.relativeY);
     }
 }

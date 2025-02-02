@@ -8,14 +8,10 @@ export class Tracker {
     private button: QPushButton;
 
     private click = () => {
-        console.log('the button was clicked');
+        console.log(this.gameSprite);
     };
 
     constructor(public gameSprite: GameSprite, public rect, private screen) {
-        if (gameSprite.name !== 'Xan fan') {
-            return;
-        }
-
         this.init();
     }
 
@@ -38,15 +34,15 @@ export class Tracker {
         centralWidget.setLayout(rootLayout);
 
         // QIcon(path.join(__dirname, '../assets/logox200.png'));
-        const button = new QPushButton();
-        button.setAutoFillBackground(true);
-        button.setFixedSize(10, 10);
-        button.setContentsMargins(0, 0, 0, 0);
-        button.setToolTip(this.gameSprite.name);
-        button.setInlineStyle('background-color: red;')
-        button.setCursor(CursorShape.PointingHandCursor);
-        button.addEventListener('clicked', this.click);
-        rootLayout.addWidget(button);
+        this.button = new QPushButton();
+        this.button.setAutoFillBackground(true);
+        this.button.setFixedSize(10, 10);
+        this.button.setContentsMargins(0, 0, 0, 0);
+        this.button.setToolTip(this.gameSprite.name);
+        this.button.setInlineStyle('background-color: red;')
+        this.button.setCursor(CursorShape.PointingHandCursor);
+        this.button.addEventListener('clicked', this.click);
+        rootLayout.addWidget(this.button);
 
         this.window.setCentralWidget(centralWidget);
 
@@ -54,10 +50,6 @@ export class Tracker {
     }
 
     public track(): void {
-        if (this.gameSprite.name !== 'Xan fan') {
-            return;
-        }
-
         if (
             this.gameSprite.relativeX < 0 || this.gameSprite.relativeX > this.gameSprite.viewportX ||
             this.gameSprite.relativeY < 0 || this.gameSprite.relativeY > this.gameSprite.viewportY

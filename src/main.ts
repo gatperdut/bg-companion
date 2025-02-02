@@ -14,7 +14,7 @@ sourceMapSupport.install();
 const trackers: Record<number, Tracker> = {};
 
 const main = (): void => {
-  setInterval(loop, 500);
+  setInterval(loop, 1500);
 }
 
 const loop = (): void => {

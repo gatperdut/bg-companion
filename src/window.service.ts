@@ -71,7 +71,5 @@ export const win = (pid: number): WinResult => {
 
     result.screen.height = GetSystemMetrics(17)
 
-    console.log(result);
-
     return result;
 }

@@ -1,7 +1,7 @@
 
 import koffi from 'koffi/indirect';
 import { GameSprite } from './game-sprite.class';
-import { memRead_ptr, memRead_string, memRead_uint32, memRead_uint8 } from './mem-read.service';
+import { memRead_int32, memRead_ptr, memRead_string, memRead_uint32, memRead_uint8 } from './mem-read.service';
 import { joinName } from './util.service';
 import { kernel32, psapi } from './libs';
 
@@ -163,20 +163,20 @@ export const mem = (): MemResult => {
     
     const offset = 0x68D434;
     
-    let bytesRead = [0];
-
-    let numEntities = [0];
+    let numEntities = memRead_int32(procHandle, modBaseAddr + BigInt(offset));
     
-    ReadProcessMemory_int32(procHandle, modBaseAddr + BigInt(offset), numEntities, 4, bytesRead);
-
     const list = modBaseAddr + BigInt(offset + 0x4 + 0x18);
     
     let cGameObjectPtrs: number[] = [];
 
-    let buffer = [0];
-    for (let i = 2001 * 16; i <= numEntities[0] * 16; i += 16) {
-        ReadProcessMemory_pointer(procHandle, list + BigInt(i + 8), buffer, 4, bytesRead);
-        cGameObjectPtrs.push(buffer[0]);
+    for (let i = 2001 * 16; i <= numEntities * 16; i += 16) {
+        if (memRead_uint32(procHandle, list + BigInt(i)) === 65535) {
+            continue;
+        };
+
+        cGameObjectPtrs.push(
+            memRead_ptr(procHandle, list + BigInt(i + 8))
+        );
     }
 
     for (let i = 0; i < cGameObjectPtrs.length; i++) {
