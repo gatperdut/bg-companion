@@ -1,4 +1,4 @@
-import { kernel32 } from './libs';
+import { kernel32 } from './win32-libs';
 
 const GetLastError = kernel32.func('__stdcall', 'GetLastError', 'uint32', []);
 

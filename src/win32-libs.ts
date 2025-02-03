@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
 import koffi from 'koffi/indirect';
 
 export const user32 = koffi.load('user32.dll');

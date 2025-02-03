@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
-import { kernel32 } from './libs';
-import { joinName } from './util.service';
+import { joinName } from '../util.service';
+import { kernel32 } from '../win32-libs';
+
+// const ReadProcessMemory = kernel32.func(STDCALL, 'ReadProcessMemory', BOOL, [HANDLE, ])
 
 const ReadProcessMemory_uint8 = kernel32.func(
   'bool __stdcall ReadProcessMemory(_In_ void* hProcess, _In_ void* lpBaseAddress, _Out_ uint8* lpBuffer, _In_ ulong nSize, _Out_ uint32* lpNumberOfBytesRead)'

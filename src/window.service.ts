@@ -2,7 +2,7 @@
 // @ts-nocheck
 
 import koffi from 'koffi/indirect';
-import { dwmapi, user32 } from './libs';
+import { dwmapi, user32 } from './win32-libs';
 
 const GetWindowThreadProcessId = user32.func(
   'long __stdcall GetWindowThreadProcessId(_In_ void* hwnd, _Inout_ long* lpdwProcessId)'

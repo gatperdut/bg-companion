@@ -8,7 +8,7 @@ import {
   memRead_string,
   memRead_uint32,
   memRead_uint8,
-} from './mem-read.service';
+} from './koffi/mem-read.service';
 
 export class GameSprite {
   public loaded: boolean = false;
