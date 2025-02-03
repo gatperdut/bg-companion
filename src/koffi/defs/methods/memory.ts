@@ -3,27 +3,34 @@ import koffi from 'koffi/indirect';
 import { kernel32 } from 'src/win32-libs';
 import {
   ADDRESS_PTR,
+  ADDRESS_PTR_TYPE,
   BOOL,
   HANDLE_PTR,
   HANDLE_PTR_TYPE,
-  INT32,
   STDCALL,
+} from '../primitives';
+import {
+  BYTE,
+  DWORD,
+  INT16,
+  INT32,
+  LONG,
+  NUMBER,
   UINT16,
   UINT32,
   UINT8,
   ULONG,
-} from '../primitives';
+} from '../primitives/numbers';
 
 type ReadProcessMemoryFn = (
   handlePtr: HANDLE_PTR_TYPE,
-  address: typeof ADDRESS_PTR,
+  address: ADDRESS_PTR_TYPE,
   value: number[],
   size: number,
   bytesRead: number[]
 ) => number;
 
-// ReadProcessMemory_uint16(procHandle, ptr, value, 2, bytesRead);
-export const ReadProcessMemory_number = (type: unknown): ReadProcessMemoryFn => {
+const ReadProcessMemoryNumberDefine = (type: unknown): ReadProcessMemoryFn => {
   return kernel32.func(STDCALL, 'ReadProcessMemory', BOOL, [
     HANDLE_PTR,
     ADDRESS_PTR,
@@ -33,12 +40,28 @@ export const ReadProcessMemory_number = (type: unknown): ReadProcessMemoryFn => 
   ]);
 };
 
-export const ReadProcessMemory_uint8 = ReadProcessMemory_number(UINT8);
+export const ReadProcessMemoryNumber: Record<NUMBER, ReadProcessMemoryFn> = {
+  BYTE: ReadProcessMemoryNumberDefine(BYTE),
+  UINT8: ReadProcessMemoryNumberDefine(UINT8),
+  INT16: ReadProcessMemoryNumberDefine(INT16),
+  UINT16: ReadProcessMemoryNumberDefine(UINT16),
+  INT32: ReadProcessMemoryNumberDefine(INT32),
+  UINT32: ReadProcessMemoryNumberDefine(UINT32),
+  DWORD: ReadProcessMemoryNumberDefine(DWORD),
+  LONG: ReadProcessMemoryNumberDefine(LONG),
+  ULONG: ReadProcessMemoryNumberDefine(ULONG),
+  PTR: ReadProcessMemoryNumberDefine(UINT32),
+};
 
-export const ReadProcessMemory_uint16 = ReadProcessMemory_number(UINT16);
-
-export const ReadProcessMemory_uint32 = ReadProcessMemory_number(UINT32);
-
-export const ReadProcessMemory_int32 = ReadProcessMemory_number(INT32);
-
-export const ReadProcessMemory_ptr = ReadProcessMemory_number(UINT32);
+export const ReadProcessMemoryNumberSize: Record<NUMBER, number> = {
+  BYTE: 1,
+  UINT8: 1,
+  INT16: 2,
+  UINT16: 2,
+  UINT32: 4,
+  INT32: 4,
+  DWORD: 4,
+  LONG: 4,
+  ULONG: 4,
+  PTR: 4,
+};

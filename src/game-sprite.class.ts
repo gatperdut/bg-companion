@@ -1,15 +1,5 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
 import { HANDLE_PTR_TYPE } from './koffi/defs/primitives';
-import {
-  memRead_int16,
-  memRead_int32,
-  memRead_ptr,
-  memRead_string,
-  memRead_uint32,
-  memRead_uint8,
-} from './koffi/memread';
+import { memRead_string, memReadNumber } from './koffi/memread';
 
 export class GameSprite {
   public loaded: boolean = false;
@@ -52,13 +42,13 @@ export class GameSprite {
   }
 
   private init(): void {
-    this.type = memRead_uint8(this.procHandle, BigInt(this.basePtr + 0x8));
+    this.type = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x8), 'UINT8');
 
-    this.gameAreaPtr = memRead_ptr(this.procHandle, BigInt(this.basePtr + 0x18));
+    this.gameAreaPtr = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x18), 'PTR');
 
-    this.hp = memRead_int16(this.procHandle, BigInt(this.basePtr + 0x560 + 0x1c));
+    this.hp = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x560 + 0x1c), 'INT16');
 
-    this.canBeSeen = memRead_int16(this.procHandle, BigInt(this.basePtr + 0x4c));
+    this.canBeSeen = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x4c), 'INT16');
     this.resref = memRead_string(this.procHandle, BigInt(this.basePtr + 0x540)).replaceAll('*', '');
 
     this.basic();
@@ -80,24 +70,33 @@ export class GameSprite {
   }
 
   private basic(): void {
-    this.id = memRead_uint32(this.procHandle, BigInt(this.basePtr + 0x48));
+    this.id = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x48), 'UINT32');
     // console.log('id ', this.id);
 
-    this.x = memRead_uint32(this.procHandle, BigInt(this.basePtr + 0xc));
-    this.y = memRead_uint32(this.procHandle, BigInt(this.basePtr + 0x10));
+    this.x = memReadNumber(this.procHandle, BigInt(this.basePtr + 0xc), 'UINT32');
+    this.y = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x10), 'UINT32');
     // console.log('X: ', this.x, 'Y: ', this.y);
 
-    const ptr = memRead_ptr(this.procHandle, BigInt(this.basePtr + 0x3928));
+    const ptr = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x3928), 'PTR');
     this.name = memRead_string(this.procHandle, BigInt(ptr));
 
-    this.viewportX = memRead_int32(this.procHandle, BigInt(this.gameAreaPtr + 0x5c8 + 0x78 + 0x8));
-    this.viewportY = memRead_int32(
+    this.viewportX = memReadNumber(
       this.procHandle,
-      BigInt(this.gameAreaPtr + 0x5c8 + 0x78 + 0x8 + 0x4)
+      BigInt(this.gameAreaPtr + 0x5c8 + 0x78 + 0x8),
+      'INT32'
+    );
+    this.viewportY = memReadNumber(
+      this.procHandle,
+      BigInt(this.gameAreaPtr + 0x5c8 + 0x78 + 0x8 + 0x4),
+      'INT32'
     );
     // console.log('viewport: ', this.viewportX, this.viewportY)
-    this.scrollX = memRead_int32(this.procHandle, BigInt(this.gameAreaPtr + 0x5c8 + 0xc0));
-    this.scrollY = memRead_int32(this.procHandle, BigInt(this.gameAreaPtr + 0x5c8 + 0xc0 + 0x4));
+    this.scrollX = memReadNumber(this.procHandle, BigInt(this.gameAreaPtr + 0x5c8 + 0xc0), 'INT32');
+    this.scrollY = memReadNumber(
+      this.procHandle,
+      BigInt(this.gameAreaPtr + 0x5c8 + 0xc0 + 0x4),
+      'INT32'
+    );
     // console.log('scroll: ', this.scrollX, this.scrollY);
     this.relativeX = this.x - this.scrollX;
     this.relativeY = this.y - this.scrollY;

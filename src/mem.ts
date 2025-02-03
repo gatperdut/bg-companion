@@ -11,7 +11,7 @@ import {
   Process32Next,
 } from './koffi/defs/methods/process';
 import { MODULEENTRY32, PROCESSENTRY32 } from './koffi/defs/structs';
-import { memRead_int32, memRead_ptr, memRead_uint32 } from './koffi/memread';
+import { memReadNumber } from './koffi/memread';
 import { joinName } from './util.service';
 
 export type MemResult = {
@@ -83,18 +83,18 @@ export const mem = (): MemResult => {
 
   const offset = 0x68d434;
 
-  const numEntities = memRead_int32(procHandle, modBaseAddr + BigInt(offset));
+  const numEntities = memReadNumber(procHandle, modBaseAddr + BigInt(offset), 'INT32');
 
   const list = modBaseAddr + BigInt(offset + 0x4 + 0x18);
 
   const cGameObjectPtrs: number[] = [];
 
   for (let i = 2001 * 16; i <= numEntities * 16; i += 16) {
-    if (memRead_uint32(procHandle, list + BigInt(i)) === 65535) {
+    if (memReadNumber(procHandle, list + BigInt(i), 'UINT32') === 65535) {
       continue;
     }
 
-    cGameObjectPtrs.push(memRead_ptr(procHandle, list + BigInt(i + 8)));
+    cGameObjectPtrs.push(memReadNumber(procHandle, list + BigInt(i + 8), 'PTR'));
   }
 
   for (let i = 0; i < cGameObjectPtrs.length; i++) {

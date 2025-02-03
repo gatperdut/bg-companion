@@ -1,5 +1,6 @@
 import koffi from 'koffi/indirect';
-import { BYTE_PTR, CHAR_ARRAY, HANDLE_PTR, LONG, UINT32, ULONG } from './primitives';
+import { CHAR_ARRAY, HANDLE_PTR } from './primitives';
+import { BYTE, LONG, UINT32, ULONG } from './primitives/numbers';
 
 export const PROCESSENTRY32 = koffi.struct('PROCESSENTRY32', {
   dwSize: UINT32,
@@ -22,7 +23,7 @@ export const MODULEENTRY32 = koffi.struct('MODULEENTRY32', {
   th32ProcessID: UINT32,
   GlblcntUsage: UINT32,
   ProccntUsage: UINT32,
-  modBaseAddr: BYTE_PTR,
+  modBaseAddr: koffi.pointer(BYTE),
   modBaseSize: UINT32,
   hModule: HANDLE_PTR,
   szModule: CHAR_ARRAY(255 + 1),
