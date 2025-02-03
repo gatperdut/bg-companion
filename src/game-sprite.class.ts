@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
+import { HANDLE_PTR_TYPE } from './koffi/defs/primitives';
 import {
   memRead_int16,
   memRead_int32,
@@ -8,7 +9,7 @@ import {
   memRead_string,
   memRead_uint32,
   memRead_uint8,
-} from './koffi/mem-read.service';
+} from './koffi/memread';
 
 export class GameSprite {
   public loaded: boolean = false;
@@ -44,7 +45,7 @@ export class GameSprite {
   public resref: string;
 
   constructor(
-    private procHandle: any,
+    private procHandle: HANDLE_PTR_TYPE,
     private basePtr: number
   ) {
     this.init();
@@ -86,7 +87,7 @@ export class GameSprite {
     this.y = memRead_uint32(this.procHandle, BigInt(this.basePtr + 0x10));
     // console.log('X: ', this.x, 'Y: ', this.y);
 
-    let ptr = memRead_ptr(this.procHandle, BigInt(this.basePtr + 0x3928));
+    const ptr = memRead_ptr(this.procHandle, BigInt(this.basePtr + 0x3928));
     this.name = memRead_string(this.procHandle, BigInt(ptr));
 
     this.viewportX = memRead_int32(this.procHandle, BigInt(this.gameAreaPtr + 0x5c8 + 0x78 + 0x8));

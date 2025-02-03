@@ -9,9 +9,9 @@ import {
   OpenProcess,
   Process32First,
   Process32Next,
-} from './koffi/defs/methods';
+} from './koffi/defs/methods/process';
 import { MODULEENTRY32, PROCESSENTRY32 } from './koffi/defs/structs';
-import { memRead_int32, memRead_ptr, memRead_uint32 } from './koffi/mem-read.service';
+import { memRead_int32, memRead_ptr, memRead_uint32 } from './koffi/memread';
 import { joinName } from './util.service';
 
 export type MemResult = {
