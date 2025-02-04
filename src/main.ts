@@ -1,13 +1,15 @@
 import * as _ from 'lodash-es';
 import sourceMapSupport from 'source-map-support';
 import { GameSprite } from './game-sprite.class';
-import { mem, MemResult } from './mem';
+import { MemHandler } from './mem.handler';
 import { Tracker } from './tracker.class';
 import { WindowHandler } from './window.handler';
 
 sourceMapSupport.install();
 
 class Main {
+  private memHandler: MemHandler;
+
   private windowHandler: WindowHandler;
 
   private trackers: Record<number, Tracker> = {};
@@ -17,6 +19,8 @@ class Main {
   }
 
   private init(): void {
+    this.memHandler = new MemHandler();
+
     this.windowHandler = new WindowHandler();
   }
 
@@ -25,17 +29,17 @@ class Main {
   }
 
   private loop(): void {
-    const memResult: MemResult = mem();
+    this.memHandler.update();
 
-    this.windowHandler.update(memResult.pid);
+    this.windowHandler.update(this.memHandler.pid);
 
-    this.trackersClean(memResult.gameSprites);
+    this.trackersClean();
 
-    this.trackersUpsert(memResult.gameSprites);
+    this.trackersUpsert();
   }
 
-  private trackersUpsert(gameSprites: GameSprite[]): void {
-    _.each(gameSprites, (gameSprite: GameSprite): void => {
+  private trackersUpsert(): void {
+    _.each(this.memHandler.gameSprites, (gameSprite: GameSprite): void => {
       if (this.trackers[gameSprite.id]) {
         this.trackers[gameSprite.id].gameSprite = gameSprite;
         this.trackers[gameSprite.id].rect = this.windowHandler.rect;
@@ -51,8 +55,8 @@ class Main {
     });
   }
 
-  private trackersClean(gameSprites: GameSprite[]): void {
-    const gameSpriteIds: number[] = gameSprites.map(
+  private trackersClean(): void {
+    const gameSpriteIds: number[] = this.memHandler.gameSprites.map(
       (gameSprite: GameSprite): number => gameSprite.id
     );
 
