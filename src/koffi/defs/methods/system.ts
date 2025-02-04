@@ -1,4 +1,4 @@
-import { user32 } from 'src/koffi/win32-libs';
+import { user32 } from 'src/koffi/defs/libs';
 import { STDCALL } from '../constants';
 import { INT32 } from '../primitives';
 

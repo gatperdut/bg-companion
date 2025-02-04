@@ -1,5 +1,5 @@
 import koffi from 'koffi/indirect';
-import { kernel32 } from 'src/koffi/win32-libs';
+import { kernel32 } from 'src/koffi/defs/libs';
 import { STDCALL } from '../constants';
 import { HANDLE_PTR } from '../handles';
 import { BOOL, DWORD, UINT32 } from '../primitives';

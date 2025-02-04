@@ -2,23 +2,24 @@
 // @ts-nocheck
 
 import koffi from 'koffi/indirect';
-import { SM_CXFULLSCREEN, SM_CYFULLSCREEN } from './koffi/defs/constants';
-import { GetSystemMetrics } from './koffi/defs/methods/system';
 import {
-  DwmGetWindowAttribute,
-  EnumWindows,
-  EnumWindowsCallbackRegister,
-  GetWindowThreadProcessId,
-} from './koffi/defs/methods/windows';
+  DWMWA_EXTENDED_FRAME_BOUNDS,
+  SM_CXFULLSCREEN,
+  SM_CYFULLSCREEN,
+} from './koffi/defs/constants';
+import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
+import { GetSystemMetrics } from './koffi/defs/methods/system';
+import { DwmGetWindowAttribute, EnumWindows } from './koffi/defs/methods/windowing';
 import { RECT } from './koffi/defs/structs';
+import { EnumWindowsCallbackRegister, getWindowThreadProcessId } from './koffi/windows';
 
-let windowHandle;
+let windowHandle: HANDLE_PTR_TYPE;
 
-const enumWindowsCallback = (hWnd, pid) => {
-  let wpid = [0];
-  GetWindowThreadProcessId(hWnd, wpid);
-  if (pid === wpid[0]) {
-    windowHandle = hWnd;
+const enumWindowsCallback = (someWindowHandle: HANDLE_PTR_TYPE, someWindowPid: number) => {
+  const windowPid = getWindowThreadProcessId(someWindowHandle);
+
+  if (windowPid === someWindowPid) {
+    windowHandle = someWindowHandle;
 
     return false;
   }
@@ -49,7 +50,7 @@ export const win = (pid: number): WinResult => {
 
   EnumWindows(callback, pid);
 
-  DwmGetWindowAttribute(windowHandle, 9, result.rect, koffi.sizeof(RECT));
+  DwmGetWindowAttribute(windowHandle, DWMWA_EXTENDED_FRAME_BOUNDS, result.rect, koffi.sizeof(RECT));
 
   result.screen.width = GetSystemMetrics(SM_CXFULLSCREEN);
 

@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
+import * as _ from 'lodash-es';
 import sourceMapSupport from 'source-map-support';
 import { GameSprite } from './game-sprite.class';
 import { mem, MemResult } from './mem';
 import { Tracker } from './tracker.class';
-
-import * as _ from 'lodash-es';
 import { win } from './window.service';
 
 sourceMapSupport.install();
