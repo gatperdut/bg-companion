@@ -12,7 +12,7 @@ import {
 } from './koffi/defs/methods/process';
 import { MODULEENTRY32, PROCESSENTRY32 } from './koffi/defs/structs';
 import { memReadNumber } from './koffi/memread';
-import { joinName } from './util.service';
+import { blankArray, joinName } from './utils';
 
 export type MemResult = {
   pid: number;
@@ -37,7 +37,7 @@ export const mem = (): MemResult => {
     th32ParentProcessID: 0,
     pcPriClassBase: 0,
     dwFlags: 0,
-    szExeFile: new Array(260).fill(0),
+    szExeFile: blankArray(260),
   };
 
   Process32First(procSnap, procEntry);
@@ -63,8 +63,8 @@ export const mem = (): MemResult => {
     modBaseAddr: 0,
     modBaseSize: 0,
     hModule: 0,
-    szModule: new Array(255 + 1).fill(0),
-    szExePath: new Array(260).fill(0),
+    szModule: blankArray(255 + 1),
+    szExePath: blankArray(260),
   };
 
   const moduleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, memResult.pid);

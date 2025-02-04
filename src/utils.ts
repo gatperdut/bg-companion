@@ -11,3 +11,7 @@ export const joinName = (nums: number[]): string => {
 
   return result.join('');
 };
+
+export const blankArray = (length: number): number[] => {
+  return new Array(length).fill(0);
+};

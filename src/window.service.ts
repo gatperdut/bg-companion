@@ -2,11 +2,15 @@
 // @ts-nocheck
 
 import koffi from 'koffi/indirect';
-import { dwmapi, user32 } from './win32-libs';
-
-const GetWindowThreadProcessId = user32.func(
-  'long __stdcall GetWindowThreadProcessId(_In_ void* hwnd, _Inout_ long* lpdwProcessId)'
-);
+import { SM_CXFULLSCREEN, SM_CYFULLSCREEN } from './koffi/defs/constants';
+import { GetSystemMetrics } from './koffi/defs/methods/system';
+import {
+  DwmGetWindowAttribute,
+  EnumWindows,
+  EnumWindowsCallbackRegister,
+  GetWindowThreadProcessId,
+} from './koffi/defs/methods/windows';
+import { RECT } from './koffi/defs/structs';
 
 let windowHandle;
 
@@ -22,35 +26,7 @@ const enumWindowsCallback = (hWnd, pid) => {
   return true;
 };
 
-const EnumWindowsCallbackProto = koffi.proto(
-  'bool __stdcall enumWindowsCallback(_In_ void* hwnd, _In_ long lParam)'
-);
-
-const EnumWindows = user32.func('__stdcall', 'EnumWindows', 'bool ', [
-  koffi.pointer(EnumWindowsCallbackProto),
-  'long',
-]);
-
-let callback = koffi.register(enumWindowsCallback, koffi.pointer(EnumWindowsCallbackProto));
-
-const RECT = koffi.struct('RECT', {
-  left: 'uint32',
-  top: 'uint32',
-  right: 'uint32',
-  bottom: 'uint32',
-});
-
-const GetWindowRect = user32.func(
-  'bool __stdcall GetWindowRect(_In_ void* hwnd, _Out_ RECT* lpRect)'
-);
-
-const DwmGetWindowAttribute = dwmapi.func(
-  'long __stdcall DwmGetWindowAttribute(_In_ void* hwnd, _In_ long dwAttribute, _Out_ RECT* pvAttribute, _In_ long cbAttribute)'
-);
-
-const GetSystemMetrics = user32.func('int __stdcall GetSystemMetrics(_In_ int nIndex)');
-
-// Hook for EVENT_OBJECT_FOCUS
+const callback = EnumWindowsCallbackRegister(enumWindowsCallback);
 
 export type WinResult = {
   rect;
@@ -73,14 +49,11 @@ export const win = (pid: number): WinResult => {
 
   EnumWindows(callback, pid);
 
-  // GetWindowRect(windowHandle, rect);
-  // console.log(rect);
-
   DwmGetWindowAttribute(windowHandle, 9, result.rect, koffi.sizeof(RECT));
 
-  result.screen.width = GetSystemMetrics(16);
+  result.screen.width = GetSystemMetrics(SM_CXFULLSCREEN);
 
-  result.screen.height = GetSystemMetrics(17);
+  result.screen.height = GetSystemMetrics(SM_CYFULLSCREEN);
 
   return result;
 };

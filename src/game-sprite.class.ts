@@ -1,5 +1,5 @@
-import { HANDLE_PTR_TYPE } from './koffi/defs/primitives';
-import { memRead_string, memReadNumber } from './koffi/memread';
+import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
+import { memReadNumber, memReadString } from './koffi/memread';
 
 export class GameSprite {
   public loaded: boolean = false;
@@ -49,7 +49,7 @@ export class GameSprite {
     this.hp = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x560 + 0x1c), 'INT16');
 
     this.canBeSeen = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x4c), 'INT16');
-    this.resref = memRead_string(this.procHandle, BigInt(this.basePtr + 0x540)).replaceAll('*', '');
+    this.resref = memReadString(this.procHandle, BigInt(this.basePtr + 0x540)).replaceAll('*', '');
 
     this.basic();
 
@@ -78,7 +78,7 @@ export class GameSprite {
     // console.log('X: ', this.x, 'Y: ', this.y);
 
     const ptr = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x3928), 'PTR');
-    this.name = memRead_string(this.procHandle, BigInt(ptr));
+    this.name = memReadString(this.procHandle, BigInt(ptr));
 
     this.viewportX = memReadNumber(
       this.procHandle,

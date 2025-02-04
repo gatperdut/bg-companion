@@ -1,15 +1,10 @@
 import koffi from 'koffi/indirect';
 
-import { kernel32 } from 'src/win32-libs';
+import { kernel32 } from 'src/koffi/win32-libs';
+import { STDCALL } from '../constants';
+import { ADDRESS_PTR, ADDRESS_PTR_TYPE, HANDLE_PTR, HANDLE_PTR_TYPE } from '../handles';
 import {
-  ADDRESS_PTR,
-  ADDRESS_PTR_TYPE,
   BOOL,
-  HANDLE_PTR,
-  HANDLE_PTR_TYPE,
-  STDCALL,
-} from '../primitives';
-import {
   BYTE,
   DWORD,
   INT16,
@@ -20,7 +15,7 @@ import {
   UINT32,
   UINT8,
   ULONG,
-} from '../primitives/numbers';
+} from '../primitives';
 
 type ReadProcessMemoryFn = (
   handlePtr: HANDLE_PTR_TYPE,
@@ -41,6 +36,7 @@ const ReadProcessMemoryNumberDefine = (type: unknown): ReadProcessMemoryFn => {
 };
 
 export const ReadProcessMemoryNumber: Record<NUMBER, ReadProcessMemoryFn> = {
+  BOOL: ReadProcessMemoryNumberDefine(BYTE),
   BYTE: ReadProcessMemoryNumberDefine(BYTE),
   UINT8: ReadProcessMemoryNumberDefine(UINT8),
   INT16: ReadProcessMemoryNumberDefine(INT16),
@@ -54,6 +50,7 @@ export const ReadProcessMemoryNumber: Record<NUMBER, ReadProcessMemoryFn> = {
 };
 
 export const ReadProcessMemoryNumberSize: Record<NUMBER, number> = {
+  BOOL: 1,
   BYTE: 1,
   UINT8: 1,
   INT16: 2,

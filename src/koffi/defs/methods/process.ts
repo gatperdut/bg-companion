@@ -1,7 +1,8 @@
 import koffi from 'koffi/indirect';
-import { kernel32 } from 'src/win32-libs';
-import { BOOL, HANDLE_PTR, STDCALL } from '../primitives';
-import { DWORD, UINT32 } from '../primitives/numbers';
+import { kernel32 } from 'src/koffi/win32-libs';
+import { STDCALL } from '../constants';
+import { HANDLE_PTR } from '../handles';
+import { BOOL, DWORD, UINT32 } from '../primitives';
 import { MODULEENTRY32_PTR, PROCESSENTRY32_PTR } from '../structs';
 
 export const CreateToolhelp32Snapshot = kernel32.func(
