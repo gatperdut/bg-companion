@@ -1,66 +1,75 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
 import * as _ from 'lodash-es';
 import sourceMapSupport from 'source-map-support';
 import { GameSprite } from './game-sprite.class';
 import { mem, MemResult } from './mem';
 import { Tracker } from './tracker.class';
-import { win } from './window.service';
+import { WindowHandler } from './window.handler';
 
 sourceMapSupport.install();
 
-const trackers: Record<number, Tracker> = {};
+class Main {
+  private windowHandler: WindowHandler;
 
-const main = (): void => {
-  setInterval(loop, 500);
-};
+  private trackers: Record<number, Tracker> = {};
 
-const loop = (): void => {
-  const memResult: MemResult = mem();
+  constructor() {
+    this.init();
+  }
 
-  const winResult = win(memResult.pid);
+  private init(): void {
+    this.windowHandler = new WindowHandler();
+  }
 
-  const rect = winResult.rect;
+  public run(): void {
+    setInterval(this.loop.bind(this), 500);
+  }
 
-  const screen = winResult.screen;
+  private loop(): void {
+    const memResult: MemResult = mem();
 
-  trackersClean(memResult.gameSprites);
+    this.windowHandler.update(memResult.pid);
 
-  trackersUpsert(memResult.gameSprites, rect, screen);
-};
+    this.trackersClean(memResult.gameSprites);
 
-const trackersUpsert = (gameSprites: GameSprite[], rect, screen): void => {
-  _.each(gameSprites, (gameSprite: GameSprite): void => {
-    if (trackers[gameSprite.id]) {
-      trackers[gameSprite.id].gameSprite = gameSprite;
-      trackers[gameSprite.id].rect = rect;
-    } else {
-      trackers[gameSprite.id] = new Tracker(gameSprite, rect, screen);
-    }
+    this.trackersUpsert(memResult.gameSprites);
+  }
 
-    trackers[gameSprite.id].track();
-  });
-};
+  private trackersUpsert(gameSprites: GameSprite[]): void {
+    _.each(gameSprites, (gameSprite: GameSprite): void => {
+      if (this.trackers[gameSprite.id]) {
+        this.trackers[gameSprite.id].gameSprite = gameSprite;
+        this.trackers[gameSprite.id].rect = this.windowHandler.rect;
+      } else {
+        this.trackers[gameSprite.id] = new Tracker(
+          gameSprite,
+          this.windowHandler.rect,
+          this.windowHandler.screen
+        );
+      }
 
-const trackersClean = (gameSprites: GameSprite[]): void => {
-  const gameSpriteIds: number[] = gameSprites.map(
-    (gameSprite: GameSprite): number => gameSprite.id
-  );
+      this.trackers[gameSprite.id].track();
+    });
+  }
 
-  const remove: number[] = [];
+  private trackersClean(gameSprites: GameSprite[]): void {
+    const gameSpriteIds: number[] = gameSprites.map(
+      (gameSprite: GameSprite): number => gameSprite.id
+    );
 
-  _.each(trackers, (tracker: Tracker): void => {
-    if (!gameSpriteIds.includes(tracker.gameSprite.id)) {
-      remove.push(tracker.gameSprite.id);
-    }
-  });
+    const remove: number[] = [];
 
-  remove.forEach((id: number): void => {
-    trackers[id].close();
+    _.each(this.trackers, (tracker: Tracker): void => {
+      if (!gameSpriteIds.includes(tracker.gameSprite.id)) {
+        remove.push(tracker.gameSprite.id);
+      }
+    });
 
-    delete trackers[id];
-  });
-};
+    remove.forEach((id: number): void => {
+      this.trackers[id].close();
 
-main();
+      delete this.trackers[id];
+    });
+  }
+}
+
+new Main().run();

@@ -1,6 +1,6 @@
 import koffi from 'koffi/indirect';
 import { HANDLE_PTR_TYPE } from './defs/handles';
-import { EnumWindowsCallbackProto, GetWindowThreadProcessId } from './defs/methods/windowing';
+import { EnumWindowsCallbackProto, GetWindowThreadProcessId } from './defs/methods/windows';
 
 export const EnumWindowsCallbackRegister = (callback: unknown) => {
   return koffi.register(callback, koffi.pointer(EnumWindowsCallbackProto));
