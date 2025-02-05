@@ -1,8 +1,6 @@
-import * as _ from 'lodash-es';
 import sourceMapSupport from 'source-map-support';
-import { GameSprite } from './game-sprite.class';
 import { MemHandler } from './mem.handler';
-import { Tracker } from './tracker.class';
+import { TrackerHandler } from './tracker.handler';
 import { WindowHandler } from './window.handler';
 
 sourceMapSupport.install();
@@ -12,7 +10,7 @@ class Main {
 
   private windowHandler: WindowHandler;
 
-  private trackers: Record<number, Tracker> = {};
+  private trackerHandler: TrackerHandler;
 
   constructor() {
     this.init();
@@ -22,6 +20,8 @@ class Main {
     this.memHandler = new MemHandler();
 
     this.windowHandler = new WindowHandler();
+
+    this.trackerHandler = new TrackerHandler();
   }
 
   public run(): void {
@@ -29,50 +29,17 @@ class Main {
   }
 
   private loop(): void {
-    this.memHandler.update();
+    this.memHandler.run();
 
-    this.windowHandler.update(this.memHandler.pid);
+    this.windowHandler.run(this.memHandler.pid);
 
-    this.trackersClean();
-
-    this.trackersUpsert();
-  }
-
-  private trackersUpsert(): void {
-    _.each(this.memHandler.gameSprites, (gameSprite: GameSprite): void => {
-      if (this.trackers[gameSprite.id]) {
-        this.trackers[gameSprite.id].gameSprite = gameSprite;
-        this.trackers[gameSprite.id].rect = this.windowHandler.rect;
-      } else {
-        this.trackers[gameSprite.id] = new Tracker(
-          gameSprite,
-          this.windowHandler.rect,
-          this.windowHandler.screen
-        );
-      }
-
-      this.trackers[gameSprite.id].track();
-    });
-  }
-
-  private trackersClean(): void {
-    const gameSpriteIds: number[] = this.memHandler.gameSprites.map(
-      (gameSprite: GameSprite): number => gameSprite.id
+    this.trackerHandler.run(
+      this.memHandler.processHandle,
+      this.memHandler.gameObjectPtrs,
+      this.windowHandler.rect
     );
 
-    const remove: number[] = [];
-
-    _.each(this.trackers, (tracker: Tracker): void => {
-      if (!gameSpriteIds.includes(tracker.gameSprite.id)) {
-        remove.push(tracker.gameSprite.id);
-      }
-    });
-
-    remove.forEach((id: number): void => {
-      this.trackers[id].close();
-
-      delete this.trackers[id];
-    });
+    this.memHandler.processSnapshotClose();
   }
 }
 

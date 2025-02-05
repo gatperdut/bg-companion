@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
 import {
   CursorShape,
   Direction,
@@ -10,26 +7,55 @@ import {
   QWidget,
   WindowType,
 } from '@nodegui/nodegui';
-import { GameSprite } from './game-sprite.class';
+import { GameSprite as Sprite } from './game-sprite.class';
+import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
+import { Rect } from './window.handler';
 
 export class Tracker {
+  public loaded: boolean = false;
+
+  public sprite: Sprite;
+
   private window: QMainWindow;
 
   private button: QPushButton;
 
-  private click = () => {
-    console.log(this.gameSprite);
-  };
-
   constructor(
-    public gameSprite: GameSprite,
-    public rect,
-    private screen
+    private processHandle: HANDLE_PTR_TYPE,
+    private gameObjectPtr: number,
+    private rect: Rect
   ) {
     this.init();
   }
 
   private init(): void {
+    this.sprite = new Sprite(this.processHandle, this.gameObjectPtr);
+
+    this.loaded = !this.spriteInvalid;
+  }
+
+  private get spriteInvalid(): boolean {
+    return (
+      this.sprite.type !== 0x31 ||
+      !this.sprite.hp ||
+      !this.sprite.gameAreaPtr ||
+      this.sprite.x < 0 ||
+      this.sprite.y < 0 ||
+      !this.sprite.name ||
+      !this.sprite.resref ||
+      !this.sprite.canBeSeen
+    );
+  }
+
+  public advanced(): void {
+    this.sprite.advanced();
+  }
+
+  private click = () => {
+    console.log(this.sprite);
+  };
+
+  public createWindow(): void {
     this.window = new QMainWindow();
 
     this.window.setWindowFlag(WindowType.FramelessWindowHint, true);
@@ -52,23 +78,21 @@ export class Tracker {
     this.button.setAutoFillBackground(true);
     this.button.setFixedSize(10, 10);
     this.button.setContentsMargins(0, 0, 0, 0);
-    this.button.setToolTip(this.gameSprite.name);
+    this.button.setToolTip(this.sprite.name);
     this.button.setInlineStyle('background-color: red;');
     this.button.setCursor(CursorShape.PointingHandCursor);
     this.button.addEventListener('clicked', this.click);
     rootLayout.addWidget(this.button);
 
     this.window.setCentralWidget(centralWidget);
-
-    this.track();
   }
 
   public track(): void {
     if (
-      this.gameSprite.relativeX < 0 ||
-      this.gameSprite.relativeX > this.gameSprite.viewportX ||
-      this.gameSprite.relativeY < 0 ||
-      this.gameSprite.relativeY > this.gameSprite.viewportY
+      this.sprite.relativeX < 0 ||
+      this.sprite.relativeX > this.sprite.viewportX ||
+      this.sprite.relativeY < 0 ||
+      this.sprite.relativeY > this.sprite.viewportY
     ) {
       if (!this.window.isHidden()) {
         this.window.hide();
@@ -80,10 +104,10 @@ export class Tracker {
     const rectHeight = this.rect.bottom - this.rect.top;
 
     const left = Math.round(
-      this.rect.left + (this.gameSprite.relativeX / this.gameSprite.viewportX) * rectWidth
+      this.rect.left + (this.sprite.relativeX / this.sprite.viewportX) * rectWidth
     );
     const top = Math.round(
-      this.rect.top + (this.gameSprite.relativeY / this.gameSprite.viewportY) * rectHeight
+      this.rect.top + (this.sprite.relativeY / this.sprite.viewportY) * rectHeight
     );
 
     if (this.window.isHidden()) {

@@ -18,6 +18,12 @@ import { blankArray, joinName } from './utils';
 export class MemHandler {
   public pid: number;
 
+  private processSnapshot: HANDLE_PTR_TYPE;
+
+  public processHandle: HANDLE_PTR_TYPE;
+
+  public gameObjectPtrs: number[];
+
   public gameSprites: GameSprite[];
 
   constructor() {
@@ -27,13 +33,15 @@ export class MemHandler {
   private init(): void {
     this.pid = null;
 
+    this.gameObjectPtrs = [];
+
     this.gameSprites = [];
   }
 
-  public update(): void {
+  public run(): void {
     this.init();
 
-    const procSnap: HANDLE_PTR_TYPE = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    this.processSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
     const procEntry = {
       dwSize: koffi.sizeof(PROCESSENTRY32),
@@ -48,7 +56,7 @@ export class MemHandler {
       szExeFile: blankArray(260),
     };
 
-    Process32First(procSnap, procEntry);
+    Process32First(this.processSnapshot, procEntry);
 
     do {
       if (joinName(procEntry.szExeFile) === 'Baldur.exe') {
@@ -56,7 +64,7 @@ export class MemHandler {
 
         break;
       }
-    } while (Process32Next(procSnap, procEntry));
+    } while (Process32Next(this.processSnapshot, procEntry));
 
     if (!this.pid) {
       console.log('No PID found.');
@@ -85,37 +93,32 @@ export class MemHandler {
       if (joinName(modEntry.szModule) === 'Baldur.exe') {
         break;
       }
-    } while (Module32Next(procSnap, modEntry));
+    } while (Module32Next(this.processSnapshot, modEntry));
 
     const modBaseAddr: bigint = koffi.address(modEntry.modBaseAddr);
 
-    const processHandle: HANDLE_PTR_TYPE = OpenProcess(PROCESS_VM_READ, true, this.pid);
+    this.processHandle = OpenProcess(PROCESS_VM_READ, true, this.pid);
 
     const offset: number = 0x68d434;
 
-    const numEntities: number = memReadNumber(processHandle, modBaseAddr + BigInt(offset), 'INT32');
+    const numEntities: number = memReadNumber(
+      this.processHandle,
+      modBaseAddr + BigInt(offset),
+      'INT32'
+    );
 
     const listPointer: bigint = modBaseAddr + BigInt(offset + 0x4 + 0x18);
 
-    const gameObjectPtrs: number[] = [];
-
     for (let i = 2001 * 16; i <= numEntities * 16; i += 16) {
-      if (memReadNumber(processHandle, listPointer + BigInt(i), 'UINT32') === 65535) {
-        continue;
-      }
-
-      gameObjectPtrs.push(memReadNumber(processHandle, listPointer + BigInt(i + 8), 'PTR'));
-    }
-
-    for (let i: number = 0; i < gameObjectPtrs.length; i++) {
-      const gameSprite: GameSprite = new GameSprite(processHandle, gameObjectPtrs[i]);
-
-      if (gameSprite.loaded) {
-        this.gameSprites.push(gameSprite);
-      }
+      this.gameObjectPtrs.push(
+        memReadNumber(this.processHandle, listPointer + BigInt(i + 8), 'PTR')
+      );
     }
 
     CloseHandle(moduleSnapshot);
-    CloseHandle(procSnap);
+  }
+
+  public processSnapshotClose(): void {
+    CloseHandle(this.processSnapshot);
   }
 }

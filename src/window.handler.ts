@@ -63,7 +63,7 @@ export class WindowHandler {
     return true;
   };
 
-  public update(pid: number): void {
+  public run(pid: number): void {
     EnumWindows(this.callback, pid);
 
     DwmGetWindowAttribute(
