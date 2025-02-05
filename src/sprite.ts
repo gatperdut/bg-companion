@@ -1,7 +1,7 @@
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import { memReadNumber, memReadString } from './koffi/memread';
 
-export class GameSprite {
+export class Sprite {
   public type: number;
 
   public canBeSeen: number;

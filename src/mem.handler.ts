@@ -1,5 +1,4 @@
 import koffi from 'koffi/indirect';
-import { GameSprite } from './game-sprite.class';
 import { PROCESS_VM_READ, TH32CS_SNAPMODULE, TH32CS_SNAPPROCESS } from './koffi/defs/constants';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import {
@@ -13,6 +12,7 @@ import {
 } from './koffi/defs/methods/process';
 import { MODULEENTRY32, PROCESSENTRY32 } from './koffi/defs/structs';
 import { memReadNumber } from './koffi/memread';
+import { Sprite } from './sprite';
 import { blankArray, joinName } from './utils';
 
 export class MemHandler {
@@ -24,7 +24,7 @@ export class MemHandler {
 
   public gameObjectPtrs: number[];
 
-  public gameSprites: GameSprite[];
+  public sprites: Sprite[];
 
   constructor() {
     // Empty
@@ -35,7 +35,7 @@ export class MemHandler {
 
     this.gameObjectPtrs = [];
 
-    this.gameSprites = [];
+    this.sprites = [];
   }
 
   public run(): void {

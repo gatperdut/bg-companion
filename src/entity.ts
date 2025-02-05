@@ -7,11 +7,11 @@ import {
   QWidget,
   WindowType,
 } from '@nodegui/nodegui';
-import { GameSprite as Sprite } from './game-sprite.class';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
+import { Sprite } from './sprite';
 import { Rect } from './window.handler';
 
-export class Tracker {
+export class Entity {
   public loaded: boolean = false;
 
   public sprite: Sprite;

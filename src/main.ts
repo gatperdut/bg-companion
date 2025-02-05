@@ -1,6 +1,6 @@
 import sourceMapSupport from 'source-map-support';
+import { EntityHandler } from './entity.handler';
 import { MemHandler } from './mem.handler';
-import { TrackerHandler } from './tracker.handler';
 import { WindowHandler } from './window.handler';
 
 sourceMapSupport.install();
@@ -10,7 +10,7 @@ class Main {
 
   private windowHandler: WindowHandler;
 
-  private trackerHandler: TrackerHandler;
+  private entityHandler: EntityHandler;
 
   constructor() {
     this.init();
@@ -21,11 +21,11 @@ class Main {
 
     this.windowHandler = new WindowHandler();
 
-    this.trackerHandler = new TrackerHandler();
+    this.entityHandler = new EntityHandler();
   }
 
   public run(): void {
-    setInterval(this.loop.bind(this), 500);
+    setInterval(this.loop.bind(this), 300);
   }
 
   private loop(): void {
@@ -33,7 +33,7 @@ class Main {
 
     this.windowHandler.run(this.memHandler.pid);
 
-    this.trackerHandler.run(
+    this.entityHandler.run(
       this.memHandler.processHandle,
       this.memHandler.gameObjectPtrs,
       this.windowHandler.rect
