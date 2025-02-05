@@ -3,7 +3,8 @@ import { kernel32 } from 'src/koffi/defs/libs';
 import { STDCALL } from '../constants';
 import { HANDLE_PTR } from '../handles';
 import { BOOL, DWORD, UINT32 } from '../primitives';
-import { MODULEENTRY32_PTR, PROCESSENTRY32_PTR } from '../structs';
+import { MODULEENTRY32_PTR } from '../structs/moduleentry32';
+import { PROCESSENTRY32_PTR } from '../structs/processentry32';
 
 export const CreateToolhelp32Snapshot = kernel32.func(
   STDCALL,

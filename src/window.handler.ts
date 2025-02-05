@@ -7,15 +7,8 @@ import {
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import { GetSystemMetrics } from './koffi/defs/methods/system';
 import { DwmGetWindowAttribute, EnumWindows } from './koffi/defs/methods/windows';
-import { RECT } from './koffi/defs/structs';
+import { RECT, RECT_empty, RECT_TYPE } from './koffi/defs/structs/rect';
 import { EnumWindowsCallbackRegister, getWindowThreadProcessId } from './koffi/windows';
-
-export type Rect = {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-};
 
 export type Screen = {
   width: number;
@@ -27,7 +20,7 @@ export class WindowHandler {
 
   private callback: unknown;
 
-  public rect: Rect;
+  public rect: RECT_TYPE;
 
   public screen: Screen;
 
@@ -38,12 +31,7 @@ export class WindowHandler {
   private init(): void {
     this.callback = EnumWindowsCallbackRegister(this.enumWindowsCallback);
 
-    this.rect = {
-      left: null,
-      top: null,
-      right: null,
-      bottom: null,
-    };
+    this.rect = RECT_empty();
 
     this.screen = {
       width: null,

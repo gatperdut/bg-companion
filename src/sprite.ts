@@ -52,13 +52,28 @@ export class Sprite {
     this.basic();
   }
 
-  private basic(): void {
+  public get invalid(): boolean {
+    return (
+      this.type !== 0x31 ||
+      !this.hp ||
+      !this.gameAreaPtr ||
+      this.x < 0 ||
+      this.y < 0 ||
+      !this.name ||
+      !this.resref ||
+      !this.canBeSeen
+    );
+  }
+
+  public basic(): void {
     this.id = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x48), 'UINT32');
 
     this.x = memReadNumber(this.procHandle, BigInt(this.basePtr + 0xc), 'UINT32');
+
     this.y = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x10), 'UINT32');
 
     const namePtr = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x3928), 'PTR');
+
     this.name = memReadString(this.procHandle, BigInt(namePtr));
 
     this.viewportX = memReadNumber(

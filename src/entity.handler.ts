@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Entity } from './entity';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
-import { Rect } from './window.handler';
+import { RECT_TYPE } from './koffi/defs/structs/rect';
 
 export class EntityHandler {
   private entities: Record<number, Entity>;
@@ -14,7 +14,7 @@ export class EntityHandler {
     this.entities = {};
   }
 
-  public run(processHandle: HANDLE_PTR_TYPE, gameObjectPtrs: number[], rect: Rect): void {
+  public run(processHandle: HANDLE_PTR_TYPE, gameObjectPtrs: number[], rect: RECT_TYPE): void {
     const entities: Entity[] = _.filter(
       _.map(
         gameObjectPtrs,
@@ -23,18 +23,16 @@ export class EntityHandler {
       (entity: Entity): boolean => entity.loaded
     );
 
-    this.entitiesClean(entities);
+    this.entitiesRemove(entities);
 
-    this.entitiesUpsert(entities);
+    this.entitiesInsert(entities);
 
     _.each(_.values(this.entities), (entity: Entity): void => {
-      entity.advanced();
-
-      entity.track();
+      entity.update();
     });
   }
 
-  private entitiesClean(entities: Entity[]): void {
+  private entitiesRemove(entities: Entity[]): void {
     const spriteIds: number[] = _.map(entities, (entity: Entity): number => entity.sprite.id);
 
     const remove: number[] = [];
@@ -52,14 +50,12 @@ export class EntityHandler {
     });
   }
 
-  private entitiesUpsert(entities: Entity[]): void {
+  private entitiesInsert(entities: Entity[]): void {
     _.each(entities, (entity: Entity): void => {
-      if (this.entities[entity.sprite.id]) {
-        this.entities[entity.sprite.id].sprite = entity.sprite;
-      } else {
+      if (!this.entities[entity.sprite.id]) {
         this.entities[entity.sprite.id] = entity;
 
-        entity.createWindow();
+        entity.createTracker();
       }
     });
   }

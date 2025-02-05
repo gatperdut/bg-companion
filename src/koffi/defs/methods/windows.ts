@@ -3,7 +3,7 @@ import { dwmapi, user32 } from 'src/koffi/defs/libs';
 import { STDCALL } from '../constants';
 import { HANDLE_PTR } from '../handles';
 import { LONG } from '../primitives';
-import { RECT_PTR } from '../structs';
+import { RECT_PTR } from '../structs/rect';
 
 export const GetWindowThreadProcessId = user32.func(STDCALL, 'GetWindowThreadProcessId', LONG, [
   HANDLE_PTR,

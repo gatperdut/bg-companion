@@ -10,10 +10,11 @@ import {
   Process32First,
   Process32Next,
 } from './koffi/defs/methods/process';
-import { MODULEENTRY32, PROCESSENTRY32 } from './koffi/defs/structs';
+import { MODULEENTRY32_empty, MODULEENTRY32_TYPE } from './koffi/defs/structs/moduleentry32';
+import { PROCESSENTRY32_empty, PROCESSENTRY32_TYPE } from './koffi/defs/structs/processentry32';
 import { memReadNumber } from './koffi/memread';
 import { Sprite } from './sprite';
-import { blankArray, joinName } from './utils';
+import { joinName } from './utils';
 
 export class MemHandler {
   public pid: number;
@@ -43,28 +44,17 @@ export class MemHandler {
 
     this.processSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
-    const procEntry = {
-      dwSize: koffi.sizeof(PROCESSENTRY32),
-      cntUsage: 0,
-      th32ProcessID: 0,
-      th32DefaultHeapID: 0,
-      th32ModuleID: 0,
-      cntThreads: 0,
-      th32ParentProcessID: 0,
-      pcPriClassBase: 0,
-      dwFlags: 0,
-      szExeFile: blankArray(260),
-    };
+    const processEntry32: PROCESSENTRY32_TYPE = PROCESSENTRY32_empty();
 
-    Process32First(this.processSnapshot, procEntry);
+    Process32First(this.processSnapshot, processEntry32);
 
     do {
-      if (joinName(procEntry.szExeFile) === 'Baldur.exe') {
-        this.pid = procEntry.th32ProcessID;
+      if (joinName(processEntry32.szExeFile) === 'Baldur.exe') {
+        this.pid = processEntry32.th32ProcessID;
 
         break;
       }
-    } while (Process32Next(this.processSnapshot, procEntry));
+    } while (Process32Next(this.processSnapshot, processEntry32));
 
     if (!this.pid) {
       console.log('No PID found.');
@@ -72,30 +62,19 @@ export class MemHandler {
       return;
     }
 
-    const modEntry = {
-      dwSize: koffi.sizeof(MODULEENTRY32),
-      th32ModuleID: 0,
-      th32ProcessID: 0,
-      GlblcntUsage: 0,
-      ProccntUsage: 0,
-      modBaseAddr: 0,
-      modBaseSize: 0,
-      hModule: 0,
-      szModule: blankArray(255 + 1),
-      szExePath: blankArray(260),
-    };
+    const moduleEntry32: MODULEENTRY32_TYPE = MODULEENTRY32_empty();
 
     const moduleSnapshot: HANDLE_PTR_TYPE = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, this.pid);
 
-    Module32First(moduleSnapshot, modEntry);
+    Module32First(moduleSnapshot, moduleEntry32);
 
     do {
-      if (joinName(modEntry.szModule) === 'Baldur.exe') {
+      if (joinName(moduleEntry32.szModule) === 'Baldur.exe') {
         break;
       }
-    } while (Module32Next(this.processSnapshot, modEntry));
+    } while (Module32Next(this.processSnapshot, moduleEntry32));
 
-    const modBaseAddr: bigint = koffi.address(modEntry.modBaseAddr);
+    const modBaseAddr: bigint = koffi.address(moduleEntry32.modBaseAddr);
 
     this.processHandle = OpenProcess(PROCESS_VM_READ, true, this.pid);
 
