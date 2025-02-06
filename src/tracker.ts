@@ -83,10 +83,6 @@ export class Tracker {
       this.rect.top + (this.sprite.relativeY / this.sprite.viewportY) * rectHeight
     );
 
-    if (this.window.isHidden()) {
-      this.window.show();
-    }
-
     this.window.move(left, top);
   }
 
@@ -94,5 +90,13 @@ export class Tracker {
     this.button.removeEventListener('clicked', this.click);
 
     this.window.close();
+  }
+
+  public hide(): void {
+    this.window.hide();
+  }
+
+  public show(): void {
+    this.window.show();
   }
 }

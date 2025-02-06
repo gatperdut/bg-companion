@@ -10,4 +10,6 @@ export const SM_CYFULLSCREEN: number = 17;
 
 export const DWMWA_EXTENDED_FRAME_BOUNDS: number = 9;
 
+export const WH_KEYBOARD_LL: number = 13;
+
 export const STDCALL = '__stdcall';

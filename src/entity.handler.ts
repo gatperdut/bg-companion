@@ -59,4 +59,16 @@ export class EntityHandler {
       }
     });
   }
+
+  public hideTrackers(): void {
+    _.each(this.entities, (entity: Entity): void => {
+      entity.hideTracker();
+    });
+  }
+
+  public showTrackers(): void {
+    _.each(this.entities, (entity: Entity): void => {
+      entity.showTracker();
+    });
+  }
 }

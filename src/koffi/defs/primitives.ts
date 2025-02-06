@@ -36,3 +36,11 @@ export type NUMBER =
   | 'LONG'
   | 'ULONG'
   | 'PTR';
+
+export const LONG_PTR = koffi.pointer(LONG);
+
+export const ULONG_PTR = koffi.pointer(ULONG);
+
+export const INT32_PTR = koffi.pointer(INT32);
+
+export const UINT32_PTR = koffi.pointer(UINT32);

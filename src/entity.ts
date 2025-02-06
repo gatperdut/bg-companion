@@ -39,4 +39,12 @@ export class Entity {
   public close(): void {
     this.tracker.close();
   }
+
+  public hideTracker(): void {
+    this.tracker.hide();
+  }
+
+  public showTracker(): void {
+    this.tracker.show();
+  }
 }
