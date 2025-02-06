@@ -5,7 +5,7 @@ import {
   SM_CYFULLSCREEN,
 } from './koffi/defs/constants';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
-import { GetSystemMetrics } from './koffi/defs/methods/system';
+import { GetForegroundWindow, GetSystemMetrics } from './koffi/defs/methods/system';
 import { DwmGetWindowAttribute, EnumWindows } from './koffi/defs/methods/windows';
 import { RECT, RECT_empty, RECT_TYPE } from './koffi/defs/structs/rect';
 import { EnumWindowsCallbackRegister, getWindowThreadProcessId } from './koffi/windows';
@@ -17,6 +17,8 @@ export type Screen = {
 
 export class WindowHandler {
   private windowHandle: HANDLE_PTR_TYPE;
+
+  private windowPid: number;
 
   private callback: unknown;
 
@@ -40,9 +42,9 @@ export class WindowHandler {
   }
 
   private enumWindowsCallback = (windowHandle: HANDLE_PTR_TYPE, someWindowPid: number) => {
-    const windowPid = getWindowThreadProcessId(windowHandle);
+    this.windowPid = getWindowThreadProcessId(windowHandle);
 
-    if (windowPid === someWindowPid) {
+    if (this.windowPid === someWindowPid) {
       this.windowHandle = windowHandle;
 
       return false;
@@ -64,5 +66,13 @@ export class WindowHandler {
     this.screen.width = GetSystemMetrics(SM_CXFULLSCREEN);
 
     this.screen.height = GetSystemMetrics(SM_CYFULLSCREEN);
+  }
+
+  public get focused(): boolean {
+    const foreground: HANDLE_PTR_TYPE = GetForegroundWindow();
+
+    const foregroundPid = getWindowThreadProcessId(foreground);
+
+    return this.windowPid === foregroundPid;
   }
 }

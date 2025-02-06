@@ -1,7 +1,6 @@
 import sourceMapSupport from 'source-map-support';
 import { EntityHandler } from './entity.handler';
 import { KeyboardHandler } from './keyboard.handler';
-import { GetCurrentProcess, SetPriorityClass } from './koffi/defs/methods/system';
 import { MemHandler } from './mem.handler';
 import { WindowHandler } from './window.handler';
 
@@ -21,25 +20,17 @@ class Main {
   }
 
   private init(): void {
-    this.priority();
-
     this.memHandler = new MemHandler();
 
     this.windowHandler = new WindowHandler();
 
     this.entityHandler = new EntityHandler();
 
-    this.keyboardHandler = new KeyboardHandler(this.entityHandler);
+    this.keyboardHandler = new KeyboardHandler(this.windowHandler, this.entityHandler);
   }
 
   public run(): void {
     setInterval(this.loop.bind(this), 300);
-  }
-
-  private priority(): void {
-    const handle = GetCurrentProcess();
-
-    SetPriorityClass(handle, 0x00004000);
   }
 
   private loop(): void {
@@ -52,6 +43,8 @@ class Main {
       this.memHandler.gameObjectPtrs,
       this.windowHandler.rect
     );
+
+    this.keyboardHandler.run();
 
     this.memHandler.processSnapshotClose();
   }
