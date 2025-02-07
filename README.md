@@ -5,4 +5,6 @@ enumwindowscallback unregister?
 
 windows.ts koffi types
 
-keyboard and enumwindows hook: pass message along, to not block other applications?
+node clean up before exiting
+
+only read from memory when trackers shown?

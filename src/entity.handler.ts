@@ -6,12 +6,16 @@ import { RECT_TYPE } from './koffi/defs/structs/rect';
 export class EntityHandler {
   private entities: Record<number, Entity>;
 
+  private trackersShown: boolean;
+
   constructor() {
     this.init();
   }
 
   private init(): void {
     this.entities = {};
+
+    this.trackersShown = false;
   }
 
   public run(processHandle: HANDLE_PTR_TYPE, gameObjectPtrs: number[], rect: RECT_TYPE): void {
@@ -55,20 +59,28 @@ export class EntityHandler {
       if (!this.entities[entity.sprite.id]) {
         this.entities[entity.sprite.id] = entity;
 
-        entity.createTracker();
+        entity.createTracker(this.trackersShown);
       }
     });
   }
 
   public hideTrackers(): void {
-    _.each(this.entities, (entity: Entity): void => {
-      entity.hideTracker();
-    });
+    if (this.trackersShown) {
+      _.each(this.entities, (entity: Entity): void => {
+        entity.hideTracker();
+      });
+
+      this.trackersShown = false;
+    }
   }
 
   public showTrackers(): void {
-    _.each(this.entities, (entity: Entity): void => {
-      entity.showTracker();
-    });
+    if (!this.trackersShown) {
+      _.each(this.entities, (entity: Entity): void => {
+        entity.showTracker();
+      });
+
+      this.trackersShown = true;
+    }
   }
 }

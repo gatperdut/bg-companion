@@ -24,8 +24,12 @@ export class Entity {
     this.loaded = !this.sprite.invalid;
   }
 
-  public createTracker(): void {
+  public createTracker(show: boolean): void {
     this.tracker = new Tracker(this.sprite, this.rect);
+
+    if (show) {
+      this.tracker.show();
+    }
   }
 
   public update(): void {

@@ -3,8 +3,6 @@ import { GetAsyncKeyState } from './koffi/defs/methods/keyboard';
 import { WindowHandler } from './window.handler';
 
 export class KeyboardHandler {
-  private trackersShown: boolean;
-
   constructor(
     private windowHandler: WindowHandler,
     private entityHandler: EntityHandler
@@ -13,14 +11,12 @@ export class KeyboardHandler {
   }
 
   private init(): void {
-    this.trackersShown = false;
+    // Empty
   }
 
   public run(): void {
     if (!this.windowHandler.focused) {
       this.entityHandler.hideTrackers();
-
-      this.trackersShown = false;
 
       return;
     }
@@ -28,17 +24,9 @@ export class KeyboardHandler {
     const state: number = GetAsyncKeyState(0xa0);
 
     if (state) {
-      if (!this.trackersShown) {
-        this.entityHandler.showTrackers();
-      }
-
-      this.trackersShown = true;
+      this.entityHandler.showTrackers();
     } else {
-      if (this.trackersShown) {
-        this.entityHandler.hideTrackers();
-      }
-
-      this.trackersShown = false;
+      this.entityHandler.hideTrackers();
     }
   }
 }
