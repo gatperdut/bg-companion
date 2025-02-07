@@ -43,7 +43,7 @@ export class EntityHandler {
 
     _.each(remove, (id: number): void => {
       if (this.entities[id]) {
-        this.entities[id].destructor();
+        this.entities[id].teardown();
 
         delete this.entities[id];
       }
@@ -62,7 +62,8 @@ export class EntityHandler {
 
   public hideTrackers(): void {
     if (this.trackersShown) {
-      _.each(this.entities, (entity: Entity): void => {
+      console.log('HIDE');
+      _.each(_.values(this.entities), (entity: Entity): void => {
         entity.hideTracker();
       });
 
@@ -72,11 +73,20 @@ export class EntityHandler {
 
   public showTrackers(): void {
     if (!this.trackersShown) {
-      _.each(this.entities, (entity: Entity): void => {
+      console.log('SHOW');
+      _.each(_.values(this.entities), (entity: Entity): void => {
         entity.showTracker();
       });
 
       this.trackersShown = true;
     }
+  }
+
+  public teardown(): void {
+    _.each(_.values(this.entities), (entity: Entity): void => {
+      entity.teardown();
+    });
+
+    this.entities = {};
   }
 }

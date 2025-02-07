@@ -32,6 +32,10 @@ export class MemHandler {
 
   public gameObjectPtrs: number[];
 
+  public alive: boolean = false;
+
+  private waitingPrinted: boolean = false;
+
   constructor() {
     // Empty
   }
@@ -52,7 +56,11 @@ export class MemHandler {
     } while (Process32Next(this.processSnapshot, processEntry32));
 
     if (!this.pid) {
-      console.log('No PID found.');
+      if (!this.waitingPrinted) {
+        console.log('Waiting for process...');
+
+        this.waitingPrinted = true;
+      }
 
       this.gameObjectPtrs = [];
 
@@ -63,7 +71,9 @@ export class MemHandler {
       return;
     }
 
-    console.log('PID FOUND', this.pid);
+    console.log('Process found, PID:', this.pid);
+
+    this.waitingPrinted = false;
 
     const moduleEntry32: MODULEENTRY32_TYPE = MODULEENTRY32_empty();
 
@@ -91,12 +101,18 @@ export class MemHandler {
   public run(): void {
     this.gameObjectPtrs = [];
 
-    if (!isProcessAlive(this.processHandle)) {
+    this.alive = isProcessAlive(this.processHandle);
+
+    if (!this.alive) {
       this.pid = null;
 
       CloseHandle(this.processSnapshot);
 
+      this.processSnapshot = null;
+
       CloseHandle(this.processHandle);
+
+      this.processHandle = null;
 
       return;
     }
@@ -116,9 +132,5 @@ export class MemHandler {
         memReadNumber(this.processHandle, listPointer + BigInt(i + 8), 'PTR')
       );
     }
-  }
-
-  public destructor(): void {
-    // CloseHandle(moduleSnapshot);
   }
 }

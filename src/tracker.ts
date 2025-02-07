@@ -19,6 +19,8 @@ export class Tracker {
     console.log(this.sprite);
   };
 
+  private clickBnd = this.click.bind(this);
+
   constructor(
     public sprite: Sprite,
     private rect: RECT_TYPE
@@ -27,6 +29,7 @@ export class Tracker {
   }
 
   public createWindow(): void {
+    console.log('CREATE WINDOW');
     this.window = new QMainWindow();
 
     this.window.setWindowFlag(WindowType.FramelessWindowHint, true);
@@ -52,7 +55,7 @@ export class Tracker {
     this.button.setToolTip(this.sprite.name);
     this.button.setInlineStyle('background-color: red;');
     this.button.setCursor(CursorShape.PointingHandCursor);
-    this.button.addEventListener('clicked', this.click);
+    this.button.addEventListener('clicked', this.clickBnd);
     rootLayout.addWidget(this.button);
 
     this.window.setCentralWidget(centralWidget);
@@ -86,10 +89,17 @@ export class Tracker {
     this.window.move(left, top);
   }
 
-  public destructor(): void {
-    this.button.removeEventListener('clicked', this.click);
+  public teardown(): void {
+    try {
+      this.button.removeEventListener('clicked', this.clickBnd);
 
-    this.window.close();
+      this.window.delete();
+
+      console.log('DELETE WINDOW');
+    } catch (err) {
+      console.log('DELETE WINDOW INVALID');
+      return err;
+    }
   }
 
   public hide(): void {

@@ -84,6 +84,8 @@ export class WindowHandler {
   public teardown(): void {
     if (this.windowHandle) {
       CloseHandle(this.windowHandle);
+
+      this.windowHandle = null;
     }
   }
 }

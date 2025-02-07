@@ -30,14 +30,16 @@ class Main {
   }
 
   private loop(): void {
-    if (!this.memHandler.pid) {
+    if (!this.memHandler.alive) {
       this.memHandler.init();
     }
 
     this.memHandler.run();
 
-    if (!this.memHandler.pid) {
+    if (!this.memHandler.alive) {
       this.windowHandler.teardown();
+
+      this.entityHandler.teardown();
 
       return;
     }
@@ -53,8 +55,6 @@ class Main {
     );
 
     this.keyboardHandler.run();
-
-    this.memHandler.destructor();
   }
 }
 

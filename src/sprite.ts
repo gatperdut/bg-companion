@@ -92,6 +92,10 @@ export class Sprite {
 
     this.relativeX = this.x - this.scrollX;
     this.relativeY = this.y - this.scrollY;
+
+    if (!this.invalid && (!this.scrollX || !this.scrollY)) {
+      console.log(!this.scrollX, !this.scrollY);
+    }
   }
 
   public advanced(): void {

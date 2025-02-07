@@ -36,8 +36,8 @@ export class Entity {
     this.tracker.track();
   }
 
-  public destructor(): void {
-    this.tracker.destructor();
+  public teardown(): void {
+    this.tracker.teardown();
   }
 
   public hideTracker(): void {
