@@ -2,7 +2,7 @@ import koffi from 'koffi/indirect';
 import { dwmapi, user32 } from 'src/koffi/defs/libs';
 import { STDCALL } from '../constants';
 import { HANDLE_PTR } from '../handles';
-import { LONG } from '../primitives';
+import { BOOL, INT32, LONG, UINT32 } from '../primitives';
 import { RECT_PTR } from '../structs/rect';
 
 export const GetWindowThreadProcessId = user32.func(STDCALL, 'GetWindowThreadProcessId', LONG, [
@@ -30,4 +30,22 @@ export const GetForegroundWindow = user32.func(STDCALL, 'GetForegroundWindow', H
 
 export const SetForegroundWindow = user32.func(STDCALL, 'SetForegroundWindow', HANDLE_PTR, [
   HANDLE_PTR,
+]);
+
+export const SetWindowLongA = user32.func(STDCALL, 'SetWindowLongA', LONG, [
+  HANDLE_PTR,
+  INT32,
+  LONG,
+]);
+
+export const ShowWindow = user32.func(STDCALL, 'ShowWindow', BOOL, [HANDLE_PTR, INT32]);
+
+export const SetWindowPos = user32.func(STDCALL, 'SetWindowPos', BOOL, [
+  HANDLE_PTR,
+  HANDLE_PTR,
+  INT32,
+  INT32,
+  INT32,
+  INT32,
+  UINT32,
 ]);

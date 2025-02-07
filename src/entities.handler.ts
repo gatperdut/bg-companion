@@ -7,7 +7,7 @@ import { WindowHandler } from './window.handler';
 export class EntitiesHandler {
   private entities: Record<number, Entity> = {};
 
-  private trackersShown: boolean = false;
+  public trackersShown: boolean = false;
 
   constructor(private windowHandler: WindowHandler) {
     // Empty
@@ -18,7 +18,7 @@ export class EntitiesHandler {
       _.map(
         gameObjectPtrs,
         (gameObjectPtr: number): Entity =>
-          new Entity(this.windowHandler, processHandle, gameObjectPtr, rect)
+          new Entity(this, this.windowHandler, processHandle, gameObjectPtr, rect)
       ),
       (entity: Entity): boolean => entity.loaded
     );

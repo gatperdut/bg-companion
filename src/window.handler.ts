@@ -1,9 +1,5 @@
 import koffi from 'koffi/indirect';
-import {
-  DWMWA_EXTENDED_FRAME_BOUNDS,
-  SM_CXFULLSCREEN,
-  SM_CYFULLSCREEN,
-} from './koffi/defs/constants';
+import { DWMWA_EXTENDED_FRAME_BOUNDS, SM_CXSCREEN, SM_CYSCREEN } from './koffi/defs/constants';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import { CloseHandle } from './koffi/defs/methods/process';
 import { GetSystemMetrics } from './koffi/defs/methods/system';
@@ -72,9 +68,9 @@ export class WindowHandler {
       koffi.sizeof(RECT)
     );
 
-    this.screen.width = GetSystemMetrics(SM_CXFULLSCREEN);
+    this.screen.width = GetSystemMetrics(SM_CXSCREEN);
 
-    this.screen.height = GetSystemMetrics(SM_CYFULLSCREEN);
+    this.screen.height = GetSystemMetrics(SM_CYSCREEN);
   }
 
   public get focused(): boolean {

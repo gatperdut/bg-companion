@@ -1,6 +1,15 @@
 import { EntitiesHandler } from './entities.handler';
-import { VK_LSHIFT } from './koffi/defs/constants';
+import {
+  GWL_STYLE,
+  HWND_TOP,
+  SW_SHOW,
+  SWP_ASYNCWINDOWPOS,
+  VK_LSHIFT,
+  VK_RMENU,
+  WS_MAXIMIZE,
+} from './koffi/defs/constants';
 import { GetAsyncKeyState } from './koffi/defs/methods/keyboard';
+import { SetWindowLongA, SetWindowPos, ShowWindow } from './koffi/defs/methods/windows';
 import { WindowHandler } from './window.handler';
 
 export class KeyboardHandler {
@@ -13,8 +22,6 @@ export class KeyboardHandler {
 
   public run(): void {
     if (!this.windowHandler.focused) {
-      // this.entitiesHandler.hideTrackers();
-
       return;
     }
 
@@ -27,6 +34,24 @@ export class KeyboardHandler {
     const ctrl = GetAsyncKeyState(0xa2);
     if (ctrl) {
       this.entitiesHandler.print();
+    }
+
+    const lalt = GetAsyncKeyState(VK_RMENU);
+
+    if (lalt) {
+      SetWindowLongA(this.windowHandler.windowHandle, GWL_STYLE, WS_MAXIMIZE);
+
+      ShowWindow(this.windowHandler.windowHandle, SW_SHOW);
+
+      SetWindowPos(
+        this.windowHandler.windowHandle,
+        HWND_TOP,
+        0,
+        0,
+        this.windowHandler.screen.width,
+        this.windowHandler.screen.height,
+        SWP_ASYNCWINDOWPOS
+      );
     }
   }
 }

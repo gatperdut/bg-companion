@@ -7,6 +7,7 @@ import {
   QWidget,
   WindowType,
 } from '@nodegui/nodegui';
+import { EntitiesHandler } from './entities.handler';
 import { SetForegroundWindow } from './koffi/defs/methods/windows';
 import { RECT_TYPE } from './koffi/defs/structs/rect';
 import { Sprite } from './sprite';
@@ -18,6 +19,7 @@ export class Tracker {
   private button: QPushButton;
 
   constructor(
+    private entitiesHandler: EntitiesHandler,
     private windowHandler: WindowHandler,
     public sprite: Sprite,
     private rect: RECT_TYPE
@@ -83,6 +85,10 @@ export class Tracker {
     );
 
     this.window.move(left, top);
+
+    if (this.window.isHidden() && this.entitiesHandler.trackersShown) {
+      this.window.show();
+    }
   }
 
   public teardown(): void {

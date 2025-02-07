@@ -1,3 +1,4 @@
+import { EntitiesHandler } from './entities.handler';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import { RECT_TYPE } from './koffi/defs/structs/rect';
 import { Sprite } from './sprite';
@@ -12,6 +13,7 @@ export class Entity {
   public tracker: Tracker;
 
   constructor(
+    private entitiesHandler: EntitiesHandler,
     private windowHandler: WindowHandler,
     private processHandle: HANDLE_PTR_TYPE,
     private gameObjectPtr: number,
@@ -23,7 +25,7 @@ export class Entity {
   }
 
   public createTracker(show: boolean): void {
-    this.tracker = new Tracker(this.windowHandler, this.sprite, this.rect);
+    this.tracker = new Tracker(this.entitiesHandler, this.windowHandler, this.sprite, this.rect);
 
     if (show) {
       this.tracker.show();
