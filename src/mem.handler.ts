@@ -17,8 +17,6 @@ import { joinName } from './utils';
 export class MemHandler {
   private processSnapshot: HANDLE_PTR_TYPE;
 
-  private moduleSnapshot: HANDLE_PTR_TYPE;
-
   public processHandle: HANDLE_PTR_TYPE;
 
   public pid: number;
@@ -54,9 +52,9 @@ export class MemHandler {
 
     const moduleEntry32: MODULEENTRY32_TYPE = MODULEENTRY32_empty();
 
-    this.moduleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, this.pid);
+    const moduleSnapshot: HANDLE_PTR_TYPE = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, this.pid);
 
-    Module32First(this.moduleSnapshot, moduleEntry32);
+    Module32First(moduleSnapshot, moduleEntry32);
 
     do {
       if (joinName(moduleEntry32.szModule) === 'Baldur.exe') {
