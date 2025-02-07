@@ -3,7 +3,7 @@ import { Entity } from './entity';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import { RECT_TYPE } from './koffi/defs/structs/rect';
 
-export class EntityHandler {
+export class EntitiesHandler {
   private entities: Record<number, Entity> = {};
 
   private trackersShown: boolean = false;
@@ -72,14 +72,16 @@ export class EntityHandler {
     }
   }
 
-  public showTrackers(): void {
-    if (!this.trackersShown) {
-      _.each(_.values(this.entities), (entity: Entity): void => {
+  public toggleTrackers(): void {
+    _.each(_.values(this.entities), (entity: Entity): void => {
+      if (this.trackersShown) {
+        entity.hideTracker();
+      } else {
         entity.showTracker();
-      });
+      }
+    });
 
-      this.trackersShown = true;
-    }
+    this.trackersShown = !this.trackersShown;
   }
 
   public teardown(): void {

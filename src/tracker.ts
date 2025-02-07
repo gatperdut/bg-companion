@@ -32,7 +32,6 @@ export class Tracker {
     this.window = new QMainWindow();
 
     this.window.setWindowFlag(WindowType.FramelessWindowHint, true);
-
     this.window.setWindowFlag(WindowType.NoDropShadowWindowHint, true);
     this.window.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
     this.window.setWindowFlag(WindowType.Tool, true);

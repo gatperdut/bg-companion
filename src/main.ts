@@ -1,5 +1,5 @@
 import sourceMapSupport from 'source-map-support';
-import { EntityHandler } from './entity.handler';
+import { EntitiesHandler } from './entities.handler';
 import { KeyboardHandler } from './keyboard.handler';
 import { MemHandler } from './mem.handler';
 import { WindowHandler } from './window.handler';
@@ -11,7 +11,7 @@ class Main {
 
   private windowHandler: WindowHandler;
 
-  private entityHandler: EntityHandler;
+  private entitiesHandler: EntitiesHandler;
 
   private keyboardHandler: KeyboardHandler;
 
@@ -20,9 +20,9 @@ class Main {
 
     this.windowHandler = new WindowHandler();
 
-    this.entityHandler = new EntityHandler();
+    this.entitiesHandler = new EntitiesHandler();
 
-    this.keyboardHandler = new KeyboardHandler(this.windowHandler, this.entityHandler);
+    this.keyboardHandler = new KeyboardHandler(this.windowHandler, this.entitiesHandler);
   }
 
   public run(): void {
@@ -39,7 +39,7 @@ class Main {
     if (!this.memHandler.alive) {
       this.windowHandler.teardown();
 
-      this.entityHandler.teardown();
+      this.entitiesHandler.teardown();
 
       return;
     }
@@ -48,7 +48,7 @@ class Main {
 
     this.windowHandler.run();
 
-    this.entityHandler.run(
+    this.entitiesHandler.run(
       this.memHandler.processHandle,
       this.memHandler.gameObjectPtrs,
       this.windowHandler.rect
