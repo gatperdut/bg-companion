@@ -7,10 +7,6 @@ export class KeyboardHandler {
     private windowHandler: WindowHandler,
     private entityHandler: EntityHandler
   ) {
-    this.init();
-  }
-
-  private init(): void {
     // Empty
   }
 

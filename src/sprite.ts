@@ -36,10 +36,6 @@ export class Sprite {
     private procHandle: HANDLE_PTR_TYPE,
     private basePtr: number
   ) {
-    this.init();
-  }
-
-  private init(): void {
     this.type = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x8), 'UINT8');
 
     this.gameAreaPtr = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x18), 'PTR');

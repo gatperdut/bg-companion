@@ -16,10 +16,6 @@ class Main {
   private keyboardHandler: KeyboardHandler;
 
   constructor() {
-    this.init();
-  }
-
-  private init(): void {
     this.memHandler = new MemHandler();
 
     this.windowHandler = new WindowHandler(this.memHandler.pid);

@@ -15,10 +15,6 @@ export class Entity {
     private gameObjectPtr: number,
     private rect: RECT_TYPE
   ) {
-    this.init();
-  }
-
-  private init(): void {
     this.sprite = new Sprite(this.processHandle, this.gameObjectPtr);
 
     this.loaded = !this.sprite.invalid;

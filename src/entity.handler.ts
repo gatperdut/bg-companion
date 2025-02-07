@@ -4,18 +4,12 @@ import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import { RECT_TYPE } from './koffi/defs/structs/rect';
 
 export class EntityHandler {
-  private entities: Record<number, Entity>;
+  private entities: Record<number, Entity> = {};
 
-  private trackersShown: boolean;
+  private trackersShown: boolean = false;
 
   constructor() {
-    this.init();
-  }
-
-  private init(): void {
-    this.entities = {};
-
-    this.trackersShown = false;
+    // Empty
   }
 
   public run(processHandle: HANDLE_PTR_TYPE, gameObjectPtrs: number[], rect: RECT_TYPE): void {

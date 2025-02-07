@@ -27,10 +27,6 @@ export class WindowHandler {
   public screen: Screen;
 
   constructor(pid: number) {
-    this.init(pid);
-  }
-
-  private init(pid: number): void {
     this.callback = EnumWindowsCallbackRegister(this.enumWindowsCallback);
 
     EnumWindows(this.callback, pid);
@@ -42,6 +38,7 @@ export class WindowHandler {
       height: null,
     };
   }
+
   private enumWindowsCallback = (windowHandle: HANDLE_PTR_TYPE, someWindowPid: number) => {
     this.windowPid = getWindowThreadProcessId(windowHandle);
 

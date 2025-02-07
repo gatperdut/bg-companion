@@ -26,10 +26,6 @@ export class MemHandler {
   public gameObjectPtrs: number[];
 
   constructor() {
-    this.init();
-  }
-
-  private init(): void {
     this.processSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
     const processEntry32: PROCESSENTRY32_TYPE = PROCESSENTRY32_empty();
