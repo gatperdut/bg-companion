@@ -26,12 +26,14 @@ export class WindowHandler {
 
   public screen: Screen;
 
-  constructor() {
-    this.init();
+  constructor(pid: number) {
+    this.init(pid);
   }
 
-  private init(): void {
+  private init(pid: number): void {
     this.callback = EnumWindowsCallbackRegister(this.enumWindowsCallback);
+
+    EnumWindows(this.callback, pid);
 
     this.rect = RECT_empty();
 
@@ -40,7 +42,6 @@ export class WindowHandler {
       height: null,
     };
   }
-
   private enumWindowsCallback = (windowHandle: HANDLE_PTR_TYPE, someWindowPid: number) => {
     this.windowPid = getWindowThreadProcessId(windowHandle);
 
@@ -53,9 +54,7 @@ export class WindowHandler {
     return true;
   };
 
-  public run(pid: number): void {
-    EnumWindows(this.callback, pid);
-
+  public run(): void {
     DwmGetWindowAttribute(
       this.windowHandle,
       DWMWA_EXTENDED_FRAME_BOUNDS,

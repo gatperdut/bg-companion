@@ -12,25 +12,20 @@ import {
 import { MODULEENTRY32_TYPE, MODULEENTRY32_empty } from './koffi/defs/structs/moduleentry32';
 import { PROCESSENTRY32_TYPE, PROCESSENTRY32_empty } from './koffi/defs/structs/processentry32';
 import { memReadNumber } from './koffi/memread';
-import { Sprite } from './sprite';
 import { joinName } from './utils';
 
 export class MemHandler {
   private processSnapshot: HANDLE_PTR_TYPE;
 
+  private moduleSnapshot: HANDLE_PTR_TYPE;
+
   public processHandle: HANDLE_PTR_TYPE;
 
-  public processPid: number;
-
-  private moduleSnapshot: HANDLE_PTR_TYPE;
+  public pid: number;
 
   private modBaseAddr: bigint;
 
-  private offset: number = 0x68d434;
-
   public gameObjectPtrs: number[];
-
-  public sprites: Sprite[];
 
   constructor() {
     this.init();
@@ -45,13 +40,13 @@ export class MemHandler {
 
     do {
       if (joinName(processEntry32.szExeFile) === 'Baldur.exe') {
-        this.processPid = processEntry32.th32ProcessID;
+        this.pid = processEntry32.th32ProcessID;
 
         break;
       }
     } while (Process32Next(this.processSnapshot, processEntry32));
 
-    if (!this.processPid) {
+    if (!this.pid) {
       console.log('No PID found.');
 
       return;
@@ -59,7 +54,7 @@ export class MemHandler {
 
     const moduleEntry32: MODULEENTRY32_TYPE = MODULEENTRY32_empty();
 
-    this.moduleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, this.processPid);
+    this.moduleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, this.pid);
 
     Module32First(this.moduleSnapshot, moduleEntry32);
 
@@ -71,25 +66,25 @@ export class MemHandler {
 
     this.modBaseAddr = koffi.address(moduleEntry32.modBaseAddr);
 
-    this.processHandle = OpenProcess(PROCESS_VM_READ, true, this.processPid);
+    this.processHandle = OpenProcess(PROCESS_VM_READ, true, this.pid);
   }
 
   private clear(): void {
     this.gameObjectPtrs = [];
-
-    this.sprites = [];
   }
 
   public run(): void {
     this.clear();
 
+    const offset: number = 0x68d434;
+
     const numEntities: number = memReadNumber(
       this.processHandle,
-      this.modBaseAddr + BigInt(this.offset),
+      this.modBaseAddr + BigInt(offset),
       'INT32'
     );
 
-    const listPointer: bigint = this.modBaseAddr + BigInt(this.offset + 0x4 + 0x18);
+    const listPointer: bigint = this.modBaseAddr + BigInt(offset + 0x4 + 0x18);
 
     for (let i = 2001 * 16; i <= numEntities * 16; i += 16) {
       this.gameObjectPtrs.push(

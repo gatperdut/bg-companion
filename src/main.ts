@@ -22,7 +22,7 @@ class Main {
   private init(): void {
     this.memHandler = new MemHandler();
 
-    this.windowHandler = new WindowHandler();
+    this.windowHandler = new WindowHandler(this.memHandler.pid);
 
     this.entityHandler = new EntityHandler();
 
@@ -36,7 +36,7 @@ class Main {
   private loop(): void {
     this.memHandler.run();
 
-    this.windowHandler.run(this.memHandler.processPid);
+    this.windowHandler.run();
 
     this.entityHandler.run(
       this.memHandler.processHandle,
