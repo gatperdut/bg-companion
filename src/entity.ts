@@ -40,8 +40,8 @@ export class Entity {
     this.tracker.track();
   }
 
-  public close(): void {
-    this.tracker.close();
+  public destructor(): void {
+    this.tracker.destructor();
   }
 
   public hideTracker(): void {

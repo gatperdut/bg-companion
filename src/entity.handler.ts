@@ -48,7 +48,7 @@ export class EntityHandler {
     });
 
     remove.forEach((id: number): void => {
-      this.entities[id].close();
+      this.entities[id].destructor();
 
       delete this.entities[id];
     });

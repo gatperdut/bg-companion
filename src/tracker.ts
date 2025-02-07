@@ -86,7 +86,7 @@ export class Tracker {
     this.window.move(left, top);
   }
 
-  public close(): void {
+  public destructor(): void {
     this.button.removeEventListener('clicked', this.click);
 
     this.window.close();

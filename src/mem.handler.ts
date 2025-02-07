@@ -2,7 +2,6 @@ import koffi from 'koffi/indirect';
 import { PROCESS_VM_READ, TH32CS_SNAPMODULE, TH32CS_SNAPPROCESS } from './koffi/defs/constants';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import {
-  CloseHandle,
   CreateToolhelp32Snapshot,
   Module32First,
   Module32Next,
@@ -10,38 +9,34 @@ import {
   Process32First,
   Process32Next,
 } from './koffi/defs/methods/process';
-import { MODULEENTRY32_empty, MODULEENTRY32_TYPE } from './koffi/defs/structs/moduleentry32';
-import { PROCESSENTRY32_empty, PROCESSENTRY32_TYPE } from './koffi/defs/structs/processentry32';
+import { MODULEENTRY32_TYPE, MODULEENTRY32_empty } from './koffi/defs/structs/moduleentry32';
+import { PROCESSENTRY32_TYPE, PROCESSENTRY32_empty } from './koffi/defs/structs/processentry32';
 import { memReadNumber } from './koffi/memread';
 import { Sprite } from './sprite';
 import { joinName } from './utils';
 
 export class MemHandler {
-  public pid: number;
-
   private processSnapshot: HANDLE_PTR_TYPE;
 
   public processHandle: HANDLE_PTR_TYPE;
+
+  public processPid: number;
+
+  private moduleSnapshot: HANDLE_PTR_TYPE;
+
+  private modBaseAddr: bigint;
+
+  private offset: number = 0x68d434;
 
   public gameObjectPtrs: number[];
 
   public sprites: Sprite[];
 
   constructor() {
-    // Empty
+    this.init();
   }
 
   private init(): void {
-    this.pid = null;
-
-    this.gameObjectPtrs = [];
-
-    this.sprites = [];
-  }
-
-  public run(): void {
-    this.init();
-
     this.processSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
     const processEntry32: PROCESSENTRY32_TYPE = PROCESSENTRY32_empty();
@@ -50,13 +45,13 @@ export class MemHandler {
 
     do {
       if (joinName(processEntry32.szExeFile) === 'Baldur.exe') {
-        this.pid = processEntry32.th32ProcessID;
+        this.processPid = processEntry32.th32ProcessID;
 
         break;
       }
     } while (Process32Next(this.processSnapshot, processEntry32));
 
-    if (!this.pid) {
+    if (!this.processPid) {
       console.log('No PID found.');
 
       return;
@@ -64,9 +59,9 @@ export class MemHandler {
 
     const moduleEntry32: MODULEENTRY32_TYPE = MODULEENTRY32_empty();
 
-    const moduleSnapshot: HANDLE_PTR_TYPE = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, this.pid);
+    this.moduleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, this.processPid);
 
-    Module32First(moduleSnapshot, moduleEntry32);
+    Module32First(this.moduleSnapshot, moduleEntry32);
 
     do {
       if (joinName(moduleEntry32.szModule) === 'Baldur.exe') {
@@ -74,30 +69,37 @@ export class MemHandler {
       }
     } while (Module32Next(this.processSnapshot, moduleEntry32));
 
-    const modBaseAddr: bigint = koffi.address(moduleEntry32.modBaseAddr);
+    this.modBaseAddr = koffi.address(moduleEntry32.modBaseAddr);
 
-    this.processHandle = OpenProcess(PROCESS_VM_READ, true, this.pid);
+    this.processHandle = OpenProcess(PROCESS_VM_READ, true, this.processPid);
+  }
 
-    const offset: number = 0x68d434;
+  private clear(): void {
+    this.gameObjectPtrs = [];
+
+    this.sprites = [];
+  }
+
+  public run(): void {
+    this.clear();
 
     const numEntities: number = memReadNumber(
       this.processHandle,
-      modBaseAddr + BigInt(offset),
+      this.modBaseAddr + BigInt(this.offset),
       'INT32'
     );
 
-    const listPointer: bigint = modBaseAddr + BigInt(offset + 0x4 + 0x18);
+    const listPointer: bigint = this.modBaseAddr + BigInt(this.offset + 0x4 + 0x18);
 
     for (let i = 2001 * 16; i <= numEntities * 16; i += 16) {
       this.gameObjectPtrs.push(
         memReadNumber(this.processHandle, listPointer + BigInt(i + 8), 'PTR')
       );
     }
-
-    CloseHandle(moduleSnapshot);
   }
 
-  public processSnapshotClose(): void {
-    CloseHandle(this.processSnapshot);
+  public destructor(): void {
+    // CloseHandle(moduleSnapshot);
+    // CloseHandle(this.processSnapshot);
   }
 }

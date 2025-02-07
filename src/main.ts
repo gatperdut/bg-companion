@@ -36,7 +36,7 @@ class Main {
   private loop(): void {
     this.memHandler.run();
 
-    this.windowHandler.run(this.memHandler.pid);
+    this.windowHandler.run(this.memHandler.processPid);
 
     this.entityHandler.run(
       this.memHandler.processHandle,
@@ -46,7 +46,7 @@ class Main {
 
     this.keyboardHandler.run();
 
-    this.memHandler.processSnapshotClose();
+    this.memHandler.destructor();
   }
 }
 
