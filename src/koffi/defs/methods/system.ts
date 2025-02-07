@@ -8,8 +8,6 @@ export const GetSystemMetrics = user32.func(STDCALL, 'GetSystemMetrics', INT32, 
 
 export const GetCurrentProcess = kernel32.func(STDCALL, 'GetCurrentProcess', HANDLE_PTR, []);
 
-export const GetForegroundWindow = user32.func(STDCALL, 'GetForegroundWindow', HANDLE_PTR, []);
-
 export const GetExitCodeProcess = kernel32.func(STDCALL, 'GetExitCodeProcess', BOOL, [
   HANDLE_PTR,
   koffi.out(LONG_PTR),

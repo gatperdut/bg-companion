@@ -7,21 +7,18 @@ import {
   QWidget,
   WindowType,
 } from '@nodegui/nodegui';
+import { SetForegroundWindow } from './koffi/defs/methods/windows';
 import { RECT_TYPE } from './koffi/defs/structs/rect';
 import { Sprite } from './sprite';
+import { WindowHandler } from './window.handler';
 
 export class Tracker {
   private window: QMainWindow;
 
   private button: QPushButton;
 
-  private click = () => {
-    console.log(JSON.stringify(this.sprite));
-  };
-
-  private clickBnd = this.click.bind(this);
-
   constructor(
+    private windowHandler: WindowHandler,
     public sprite: Sprite,
     private rect: RECT_TYPE
   ) {
@@ -101,4 +98,12 @@ export class Tracker {
   public show(): void {
     this.window.show();
   }
+
+  private click = () => {
+    SetForegroundWindow(this.windowHandler.windowHandle);
+
+    console.log(JSON.stringify(this.sprite));
+  };
+
+  private clickBnd = this.click.bind(this);
 }

@@ -13,7 +13,7 @@ export class KeyboardHandler {
 
   public run(): void {
     if (!this.windowHandler.focused) {
-      this.entitiesHandler.hideTrackers();
+      // this.entitiesHandler.hideTrackers();
 
       return;
     }

@@ -2,13 +2,14 @@ import _ from 'lodash';
 import { Entity } from './entity';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import { RECT_TYPE } from './koffi/defs/structs/rect';
+import { WindowHandler } from './window.handler';
 
 export class EntitiesHandler {
   private entities: Record<number, Entity> = {};
 
   private trackersShown: boolean = false;
 
-  constructor() {
+  constructor(private windowHandler: WindowHandler) {
     // Empty
   }
 
@@ -16,7 +17,8 @@ export class EntitiesHandler {
     const entities: Entity[] = _.filter(
       _.map(
         gameObjectPtrs,
-        (gameObjectPtr: number): Entity => new Entity(processHandle, gameObjectPtr, rect)
+        (gameObjectPtr: number): Entity =>
+          new Entity(this.windowHandler, processHandle, gameObjectPtr, rect)
       ),
       (entity: Entity): boolean => entity.loaded
     );

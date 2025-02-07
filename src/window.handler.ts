@@ -6,8 +6,12 @@ import {
 } from './koffi/defs/constants';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import { CloseHandle } from './koffi/defs/methods/process';
-import { GetForegroundWindow, GetSystemMetrics } from './koffi/defs/methods/system';
-import { DwmGetWindowAttribute, EnumWindows } from './koffi/defs/methods/windows';
+import { GetSystemMetrics } from './koffi/defs/methods/system';
+import {
+  DwmGetWindowAttribute,
+  EnumWindows,
+  GetForegroundWindow,
+} from './koffi/defs/methods/windows';
 import { RECT, RECT_empty, RECT_TYPE } from './koffi/defs/structs/rect';
 import { EnumWindowsCallbackRegister, getWindowThreadProcessId } from './koffi/windows';
 
@@ -17,7 +21,7 @@ export type Screen = {
 };
 
 export class WindowHandler {
-  private windowHandle: HANDLE_PTR_TYPE;
+  public windowHandle: HANDLE_PTR_TYPE;
 
   private windowPid: number;
 

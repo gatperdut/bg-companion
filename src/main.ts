@@ -20,7 +20,7 @@ class Main {
 
     this.windowHandler = new WindowHandler();
 
-    this.entitiesHandler = new EntitiesHandler();
+    this.entitiesHandler = new EntitiesHandler(this.windowHandler);
 
     this.keyboardHandler = new KeyboardHandler(this.windowHandler, this.entitiesHandler);
   }

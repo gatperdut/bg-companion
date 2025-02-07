@@ -25,3 +25,9 @@ export const DwmGetWindowAttribute = dwmapi.func(STDCALL, 'DwmGetWindowAttribute
   koffi.out(RECT_PTR),
   LONG,
 ]);
+
+export const GetForegroundWindow = user32.func(STDCALL, 'GetForegroundWindow', HANDLE_PTR, []);
+
+export const SetForegroundWindow = user32.func(STDCALL, 'SetForegroundWindow', HANDLE_PTR, [
+  HANDLE_PTR,
+]);
