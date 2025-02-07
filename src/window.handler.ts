@@ -5,6 +5,7 @@ import {
   SM_CYFULLSCREEN,
 } from './koffi/defs/constants';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
+import { CloseHandle } from './koffi/defs/methods/process';
 import { GetForegroundWindow, GetSystemMetrics } from './koffi/defs/methods/system';
 import { DwmGetWindowAttribute, EnumWindows } from './koffi/defs/methods/windows';
 import { RECT, RECT_empty, RECT_TYPE } from './koffi/defs/structs/rect';
@@ -26,7 +27,15 @@ export class WindowHandler {
 
   public screen: Screen;
 
-  constructor(pid: number) {
+  constructor() {
+    // Empty
+  }
+
+  public init(pid: number): void {
+    if (this.windowHandle) {
+      return;
+    }
+
     this.callback = EnumWindowsCallbackRegister(this.enumWindowsCallback);
 
     EnumWindows(this.callback, pid);
@@ -70,5 +79,11 @@ export class WindowHandler {
     const foregroundPid = getWindowThreadProcessId(foreground);
 
     return this.windowPid === foregroundPid;
+  }
+
+  public teardown(): void {
+    if (this.windowHandle) {
+      CloseHandle(this.windowHandle);
+    }
   }
 }

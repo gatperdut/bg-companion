@@ -41,10 +41,12 @@ export class EntityHandler {
       }
     });
 
-    remove.forEach((id: number): void => {
-      this.entities[id].destructor();
+    _.each(remove, (id: number): void => {
+      if (this.entities[id]) {
+        this.entities[id].destructor();
 
-      delete this.entities[id];
+        delete this.entities[id];
+      }
     });
   }
 

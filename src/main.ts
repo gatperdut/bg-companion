@@ -18,7 +18,7 @@ class Main {
   constructor() {
     this.memHandler = new MemHandler();
 
-    this.windowHandler = new WindowHandler(this.memHandler.pid);
+    this.windowHandler = new WindowHandler();
 
     this.entityHandler = new EntityHandler();
 
@@ -30,7 +30,19 @@ class Main {
   }
 
   private loop(): void {
+    if (!this.memHandler.pid) {
+      this.memHandler.init();
+    }
+
     this.memHandler.run();
+
+    if (!this.memHandler.pid) {
+      this.windowHandler.teardown();
+
+      return;
+    }
+
+    this.windowHandler.init(this.memHandler.pid);
 
     this.windowHandler.run();
 

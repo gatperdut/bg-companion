@@ -1,7 +1,13 @@
 import koffi from 'koffi/indirect';
-import { PROCESS_VM_READ, TH32CS_SNAPMODULE, TH32CS_SNAPPROCESS } from './koffi/defs/constants';
+import {
+  PROCESS_QUERY_LIMITED_INFORMATION,
+  PROCESS_VM_READ,
+  TH32CS_SNAPMODULE,
+  TH32CS_SNAPPROCESS,
+} from './koffi/defs/constants';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import {
+  CloseHandle,
   CreateToolhelp32Snapshot,
   Module32First,
   Module32Next,
@@ -12,6 +18,7 @@ import {
 import { MODULEENTRY32_TYPE, MODULEENTRY32_empty } from './koffi/defs/structs/moduleentry32';
 import { PROCESSENTRY32_TYPE, PROCESSENTRY32_empty } from './koffi/defs/structs/processentry32';
 import { memReadNumber } from './koffi/memread';
+import { isProcessAlive } from './koffi/system';
 import { joinName } from './utils';
 
 export class MemHandler {
@@ -26,6 +33,10 @@ export class MemHandler {
   public gameObjectPtrs: number[];
 
   constructor() {
+    // Empty
+  }
+
+  public init(): void {
     this.processSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
     const processEntry32: PROCESSENTRY32_TYPE = PROCESSENTRY32_empty();
@@ -43,8 +54,16 @@ export class MemHandler {
     if (!this.pid) {
       console.log('No PID found.');
 
+      this.gameObjectPtrs = [];
+
+      CloseHandle(this.processSnapshot);
+
+      CloseHandle(this.processHandle);
+
       return;
     }
+
+    console.log('PID FOUND', this.pid);
 
     const moduleEntry32: MODULEENTRY32_TYPE = MODULEENTRY32_empty();
 
@@ -60,15 +79,27 @@ export class MemHandler {
 
     this.modBaseAddr = koffi.address(moduleEntry32.modBaseAddr);
 
-    this.processHandle = OpenProcess(PROCESS_VM_READ, true, this.pid);
-  }
+    this.processHandle = OpenProcess(
+      PROCESS_VM_READ | PROCESS_QUERY_LIMITED_INFORMATION,
+      true,
+      this.pid
+    );
 
-  private clear(): void {
-    this.gameObjectPtrs = [];
+    CloseHandle(moduleSnapshot);
   }
 
   public run(): void {
-    this.clear();
+    this.gameObjectPtrs = [];
+
+    if (!isProcessAlive(this.processHandle)) {
+      this.pid = null;
+
+      CloseHandle(this.processSnapshot);
+
+      CloseHandle(this.processHandle);
+
+      return;
+    }
 
     const offset: number = 0x68d434;
 
@@ -89,6 +120,5 @@ export class MemHandler {
 
   public destructor(): void {
     // CloseHandle(moduleSnapshot);
-    // CloseHandle(this.processSnapshot);
   }
 }
