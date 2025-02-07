@@ -1,4 +1,5 @@
 import { EntityHandler } from './entity.handler';
+import { VK_LSHIFT } from './koffi/defs/constants';
 import { GetAsyncKeyState } from './koffi/defs/methods/keyboard';
 import { WindowHandler } from './window.handler';
 
@@ -17,12 +18,17 @@ export class KeyboardHandler {
       return;
     }
 
-    const state: number = GetAsyncKeyState(0xa0);
+    const state: number = GetAsyncKeyState(VK_LSHIFT);
 
     if (state) {
       this.entityHandler.showTrackers();
     } else {
       this.entityHandler.hideTrackers();
+    }
+
+    const ctrl = GetAsyncKeyState(0xa2);
+    if (ctrl) {
+      this.entityHandler.print();
     }
   }
 }

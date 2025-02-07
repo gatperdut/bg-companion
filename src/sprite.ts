@@ -34,22 +34,14 @@ export class Sprite {
 
   constructor(
     private procHandle: HANDLE_PTR_TYPE,
-    private basePtr: number
+    public basePtr: number
   ) {
-    this.type = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x8), 'UINT8');
-
-    this.gameAreaPtr = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x18), 'PTR');
-
-    this.hp = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x560 + 0x1c), 'INT16');
-
-    this.canBeSeen = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x4c), 'INT16');
-    this.resref = memReadString(this.procHandle, BigInt(this.basePtr + 0x540)).replaceAll('*', '');
-
     this.basic();
   }
 
   public get invalid(): boolean {
     return (
+      !this.id ||
       this.type !== 0x31 ||
       !this.hp ||
       !this.gameAreaPtr ||
@@ -62,6 +54,15 @@ export class Sprite {
   }
 
   public basic(): void {
+    this.type = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x8), 'UINT8');
+
+    this.gameAreaPtr = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x18), 'PTR');
+
+    this.hp = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x560 + 0x1c), 'INT16');
+
+    this.canBeSeen = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x4c), 'INT16');
+    this.resref = memReadString(this.procHandle, BigInt(this.basePtr + 0x540)).replaceAll('*', '');
+
     this.id = memReadNumber(this.procHandle, BigInt(this.basePtr + 0x48), 'UINT32');
 
     this.x = memReadNumber(this.procHandle, BigInt(this.basePtr + 0xc), 'UINT32');
@@ -92,10 +93,6 @@ export class Sprite {
 
     this.relativeX = this.x - this.scrollX;
     this.relativeY = this.y - this.scrollY;
-
-    if (!this.invalid && (!this.scrollX || !this.scrollY)) {
-      console.log(!this.scrollX, !this.scrollY);
-    }
   }
 
   public advanced(): void {

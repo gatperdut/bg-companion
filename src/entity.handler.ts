@@ -56,13 +56,14 @@ export class EntityHandler {
         this.entities[entity.sprite.id] = entity;
 
         entity.createTracker(this.trackersShown);
+      } else {
+        this.entities[entity.sprite.id].sprite.basePtr = entity.sprite.basePtr;
       }
     });
   }
 
   public hideTrackers(): void {
     if (this.trackersShown) {
-      console.log('HIDE');
       _.each(_.values(this.entities), (entity: Entity): void => {
         entity.hideTracker();
       });
@@ -73,7 +74,6 @@ export class EntityHandler {
 
   public showTrackers(): void {
     if (!this.trackersShown) {
-      console.log('SHOW');
       _.each(_.values(this.entities), (entity: Entity): void => {
         entity.showTracker();
       });
@@ -88,5 +88,27 @@ export class EntityHandler {
     });
 
     this.entities = {};
+  }
+
+  public print(): void {
+    console.log('**********');
+    _.each(_.values(this.entities), (entity) => {
+      console.log(
+        'name',
+        entity.sprite.name,
+        'id',
+        entity.sprite.id,
+        'gap',
+        entity.sprite.gameAreaPtr,
+        'xy',
+        entity.sprite.x,
+        entity.sprite.y,
+        'scroll',
+        entity.sprite.scrollX,
+        entity.sprite.scrollY,
+        'valid',
+        !entity.sprite.invalid
+      );
+    });
   }
 }

@@ -29,7 +29,6 @@ export class Tracker {
   }
 
   public createWindow(): void {
-    console.log('CREATE WINDOW');
     this.window = new QMainWindow();
 
     this.window.setWindowFlag(WindowType.FramelessWindowHint, true);
@@ -90,16 +89,9 @@ export class Tracker {
   }
 
   public teardown(): void {
-    try {
-      this.button.removeEventListener('clicked', this.clickBnd);
+    this.button.removeEventListener('clicked', this.clickBnd);
 
-      this.window.delete();
-
-      console.log('DELETE WINDOW');
-    } catch (err) {
-      console.log('DELETE WINDOW INVALID');
-      return err;
-    }
+    this.window.delete();
   }
 
   public hide(): void {

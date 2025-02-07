@@ -28,7 +28,7 @@ export class MemHandler {
 
   public pid: number;
 
-  private modBaseAddr: bigint;
+  public modBaseAddr: bigint;
 
   public gameObjectPtrs: number[];
 
@@ -127,7 +127,7 @@ export class MemHandler {
 
     const listPointer: bigint = this.modBaseAddr + BigInt(offset + 0x4 + 0x18);
 
-    for (let i = 2001 * 16; i <= numEntities * 16; i += 16) {
+    for (let i = 2000 * 16; i <= numEntities * 16 + 96; i += 16) {
       this.gameObjectPtrs.push(
         memReadNumber(this.processHandle, listPointer + BigInt(i + 8), 'PTR')
       );
