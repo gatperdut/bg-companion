@@ -2,7 +2,7 @@ import { EntitiesHandler } from './entities.handler';
 import { HANDLE_PTR_TYPE } from './koffi/defs/handles';
 import { RECT_TYPE } from './koffi/defs/structs/rect';
 import { Sprite } from './sprite';
-import { Tracker } from './tracker';
+import { Tracker } from './tracker/tracker';
 import { WindowHandler } from './window.handler';
 
 export class Entity {
@@ -26,6 +26,8 @@ export class Entity {
 
   public createTracker(show: boolean): void {
     this.tracker = new Tracker(this.entitiesHandler, this.windowHandler, this.sprite, this.rect);
+
+    this.tracker.init();
 
     if (show) {
       this.tracker.show();

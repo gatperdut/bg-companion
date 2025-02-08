@@ -1,22 +1,17 @@
-import {
-  CursorShape,
-  Direction,
-  QBoxLayout,
-  QMainWindow,
-  QPushButton,
-  QWidget,
-  WindowType,
-} from '@nodegui/nodegui';
-import { EntitiesHandler } from './entities.handler';
-import { SetForegroundWindow } from './koffi/defs/methods/windows';
-import { RECT_TYPE } from './koffi/defs/structs/rect';
-import { Sprite } from './sprite';
-import { WindowHandler } from './window.handler';
+import { QMainWindow, WindowType } from '@nodegui/nodegui';
+import { SetForegroundWindow } from 'src/koffi/defs/methods/windows';
+import { EntitiesHandler } from '../entities.handler';
+import { RECT_TYPE } from '../koffi/defs/structs/rect';
+import { Sprite } from '../sprite';
+import { WindowHandler } from '../window.handler';
+import { WidgetClosed } from './widget-closed';
 
 export class Tracker {
   private window: QMainWindow;
 
-  private button: QPushButton;
+  private widgetClosed: WidgetClosed;
+
+  private isOpen: boolean = false;
 
   constructor(
     private entitiesHandler: EntitiesHandler,
@@ -24,39 +19,26 @@ export class Tracker {
     public sprite: Sprite,
     private rect: RECT_TYPE
   ) {
-    this.createWindow();
+    // Empty
   }
 
-  public createWindow(): void {
+  public init(): void {
+    this.widgetClosed = new WidgetClosed(this, this.sprite);
+
+    this.windowCreate();
+  }
+
+  public windowCreate(): void {
     this.window = new QMainWindow();
 
     this.window.setWindowFlag(WindowType.FramelessWindowHint, true);
     this.window.setWindowFlag(WindowType.NoDropShadowWindowHint, true);
     this.window.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
     this.window.setWindowFlag(WindowType.Tool, true);
-    this.window.setInlineStyle('max-width: 10px; max-height: 10px; background: transparent;');
 
-    const centralWidget = new QWidget();
-    centralWidget.setInlineStyle('max-width: 10px; max-height: 10px;');
+    this.window.setCentralWidget(this.widgetClosed.widget);
 
-    const rootLayout = new QBoxLayout(Direction.TopToBottom);
-    rootLayout.setContentsMargins(0, 0, 0, 0);
-
-    centralWidget.setObjectName('myroot');
-    centralWidget.setLayout(rootLayout);
-
-    // QIcon(path.join(__dirname, '../assets/logox200.png'));
-    this.button = new QPushButton();
-    this.button.setAutoFillBackground(true);
-    this.button.setFixedSize(10, 10);
-    this.button.setContentsMargins(0, 0, 0, 0);
-    this.button.setToolTip(this.sprite.name);
-    this.button.setInlineStyle('background-color: red;');
-    this.button.setCursor(CursorShape.PointingHandCursor);
-    this.button.addEventListener('clicked', this.clickBnd);
-    rootLayout.addWidget(this.button);
-
-    this.window.setCentralWidget(centralWidget);
+    this.updateCSS();
   }
 
   public track(): void {
@@ -92,7 +74,7 @@ export class Tracker {
   }
 
   public teardown(): void {
-    this.button.removeEventListener('clicked', this.clickBnd);
+    this.widgetClosed.teardown();
 
     this.window.delete();
   }
@@ -105,11 +87,43 @@ export class Tracker {
     this.window.show();
   }
 
-  private click = () => {
+  private open(): void {
+    console.log('open');
+    this.isOpen = true;
+
+    this.updateCSS();
+  }
+
+  private close(): void {
+    console.log('close');
+    this.isOpen = false;
+
+    this.updateCSS();
+  }
+
+  public closedClick(): void {
     SetForegroundWindow(this.windowHandler.windowHandle);
 
-    console.log(JSON.stringify(this.sprite));
-  };
+    if (this.isOpen) {
+      this.close();
+    } else {
+      this.open();
+    }
 
-  private clickBnd = this.click.bind(this);
+    console.log(JSON.stringify(this.sprite));
+  }
+
+  private updateCSS(): void {
+    // this.window.setInlineStyle(
+    //   `
+    //     ${this.isOpen ? '' : 'max-width: 10px; max-height: 10px;'}
+    //     background: transparent;
+    //   `
+    // );
+    // this.centralWidget.setInlineStyle(
+    //   `
+    //     ${this.isOpen ? '' : 'max-width: 10px; max-height: 10px;'}
+    //   `
+    // );
+  }
 }

@@ -1,10 +1,8 @@
-import sourceMapSupport from 'source-map-support';
+import 'source-map-support/register';
 import { EntitiesHandler } from './entities.handler';
 import { KeyboardHandler } from './keyboard.handler';
 import { MemHandler } from './mem.handler';
 import { WindowHandler } from './window.handler';
-
-sourceMapSupport.install();
 
 class Main {
   private memHandler: MemHandler;
